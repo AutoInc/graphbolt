@@ -24,7 +24,6 @@
 
 #include "../core/common/utils.h"
 #include "../core/graphBolt/GraphBoltEngine_simple.h"
-//#include "../core/graphBolt/GraphBoltEngine_complex.h"
 #include "../core/main.h"
 #include <math.h>
 
@@ -150,7 +149,7 @@ inline bool forceActivateVertexForIteration(const uintV &v, int iter,
 template<class GlobalInfoType>
 inline bool forceComputeVertexForIteration(const uintV &v, int iter,
                                            const GlobalInfoType &global_info) {
-  if (iter == 1) {
+  if (iter == 1 || v == global_info.source) {
     return true;
   } else {
     return false;
@@ -206,13 +205,10 @@ inline void computeFunction(const uintV &v,
                             const VertexValueType &vertex_value_curr,
                             VertexValueType &vertex_value_next,
                             GlobalInfoType &global_info) {
-  std::cout << "computeFunction " << v << " " << aggregation_value << " "
-            << vertex_value_curr << " " << vertex_value_next << std::endl;
-  if (v == global_info.source == v) {
+  if (v == global_info.source) {
     vertex_value_next = 1;
   } else {
-    vertex_value_next =
-        global_info.damping * aggregation_value;
+    vertex_value_next = global_info.damping * aggregation_value;
   }
 }
 
@@ -246,32 +242,14 @@ inline bool edgeFunction(const uintV &u, const uintV &v,
                          const VertexValueType &u_value,
                          AggregationValueType &u_change_in_contribution,
                          GlobalInfoType &global_info) {
-  std::cout << "edgeFunction " << u << " " << v << " " << edge_weight.weight
-            << " " << u_value << " " << u_change_in_contribution << std::endl;
-//  if(v == global_info.source) {
-//    return false;
-//  } else {
-    u_change_in_contribution *= edge_weight.weight;
+  if (v == global_info.source) {
+    return false;
+  } else {
+    u_change_in_contribution =
+        u_change_in_contribution * edge_weight.weight;
     return true;
-//  }
+  }
 }
-
-//template<class AggregationValueType, class VertexValueType, class EdgeDataType,
-//    class GlobalInfoType>
-//inline bool edgeFunctionDelta(const uintV &u, const uintV &v,
-//                              const EdgeDataType &edge_weight,
-//                              const VertexValueType &u_value_prev,
-//                              const VertexValueType &u_value_curr,
-//                              AggregationValueType &u_change_in_contribution,
-//                              GlobalInfoType &global_info) {
-//  if (v == global_info.source) {
-//    return false;
-//  } else {
-//    u_change_in_contribution =
-//        (u_value_curr - u_value_prev) * edge_weight.weight;
-//    return true;
-//  }
-//}
 
 // ======================================================================
 // INCREMENTAL COMPUTING / DETERMINING FRONTIER
@@ -281,9 +259,8 @@ inline void hasSourceChangedByUpdate(const uintV &v, UpdateType update_type,
                                      bool &activateInCurrentIteration,
                                      GlobalInfoType &global_info,
                                      GlobalInfoType &global_info_old) {
-  // TODO: need this?
-//  if (global_info.getOutDegree(v) != global_info_old.getOutDegree(v))
-//    activateInCurrentIteration = true;
+  if (global_info.getOutDegree(v) != global_info_old.getOutDegree(v))
+    activateInCurrentIteration = true;
 }
 
 template<class GlobalInfoType>
