@@ -11,3 +11,7 @@ add_executable(PHP ${PROJECT_SOURCE_DIR}/apps/PHP.C)
 target_compile_definitions(PHP PUBLIC -DEDGEDATA)
 
 add_executable(PANGERANK ${PROJECT_SOURCE_DIR}/apps/PageRank.C)
+
+add_executable(SNAPtoAdjConverter ${PROJECT_SOURCE_DIR}/tools/converters/SNAPtoAdjConverter.C)
+
+add_executable(streamGenerator ${PROJECT_SOURCE_DIR}/tools/generators/streamGenerator.C)

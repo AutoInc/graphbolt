@@ -37,12 +37,15 @@ class PHPInfo {
   double epsilon;
   double damping;
   long *out_degrees;
+  double *answer;
 
-  PHPInfo() : n(0), source(0), epsilon(0), damping(0), out_degrees(nullptr) {
+  PHPInfo() : n(0), source(0), epsilon(0), damping(0), out_degrees(nullptr),
+      answer(nullptr) {
   }
 
-  PHPInfo(uintV _n, uintV source, double _epsilon, double _damping)
-      : n(_n), source(source), epsilon(_epsilon), damping(_damping) {
+  PHPInfo(uintV _n, uintV source, double _epsilon, double _damping, double *_answer)
+      : n(_n), source(source), epsilon(_epsilon), damping(_damping),
+      answer(_answer){
     if (n > 0) {
       out_degrees = newA(long, n);
       parallel_for (uintV i = 0; i < n; i++) { out_degrees[i] = 0; }
@@ -67,6 +70,7 @@ class PHPInfo {
     source = object.source;
     epsilon = object.epsilon;
     damping = object.damping;
+    answer = object.answer;
   }
 
   ~PHPInfo() {
@@ -212,12 +216,27 @@ inline void computeFunction(const uintV &v,
   }
 }
 
+// All vertices are active
 template<class VertexValueType, class GlobalInfoType>
 inline bool isChanged(const VertexValueType &value_curr,
                       const VertexValueType &value_next,
                       GlobalInfoType &global_info) {
-  // return (fabs(value_next - value_curr) > global_info.epsilon);
   return true;
+}
+
+template<class VertexValueType, class GlobalInfoType>
+inline bool isTerminated(const VertexValueType *values_curr,
+                         GlobalInfoType &global_info) {
+  if (global_info.answer != nullptr) {
+    VertexValueType diff_sum = 0;
+    parallel_for (uintV v = 0; v < global_info.n; v++) {
+      writeAdd(&diff_sum, fabs(values_curr[v] - global_info.answer[v]));
+    }
+    std::cout << "Diff sum: " << diff_sum;
+    return diff_sum < global_info.epsilon;
+  }
+
+  return false;
 }
 
 // ======================================================================
@@ -296,13 +315,22 @@ void printAdditionalData(ofstream &output_file, const uintV &v,
 template<class vertex>
 void compute(graph<vertex> &G, commandLine config) {
   uintV n = G.n;
-  int max_iters = config.getOptionLongValue("-maxIters", 10);
   uintV source = config.getOptionLongValue("-source", 0);
-  max_iters += 1;
-  double epsilon = 0.01;
-  double damping = 0.8;
+  double epsilon = config.getOptionDoubleValue("-epsilon", 0.01);
+  double damping = config.getOptionDoubleValue("-damping", 0.8);
+  int max_iters = config.getOptionLongValue("-maxIters", 10);
+  std::string answer_path = config.getOptionValue("-answer", "");
 
-  PHPInfo global_info(n, source, epsilon, damping);
+  max_iters += 1;
+
+  std::vector<double> ans;
+
+  if (!answer_path.empty()) {
+    cout << "Loading answer file..." << endl;
+    ans = readAnswer<double>(answer_path.c_str());
+  }
+
+  PHPInfo global_info(n, source, epsilon, damping, ans.empty() ? nullptr : ans.data());
   parallel_for (uintV i = 0; i < n; i++) {
     global_info.out_degrees[i] = G.V[i].getOutDegree();
   }
