@@ -90,7 +90,7 @@ public:
         // ========== COPY - Prepare curr iteration ==========
         if (iter > 0) {
           // Copy the aggregate and actual value from iter-1 to iter
-          parallel_for(uintV v = 0; v < n; v++) {
+          for(uintV v = 0; v < n; v++) {
             vertex_values[iter][v] = vertex_values[iter - 1][v];
             aggregation_values[iter][v] = aggregation_values[iter - 1][v];
             delta[v] = aggregationValueIdentity<AggregationValueType>();
@@ -110,7 +110,7 @@ public:
         // ========== EDGE COMPUTATION ==========
         if ((use_source_contribution) && (iter == 1)) {
           // Compute source contribution for first iteration
-          parallel_for(uintV u = 0; u < n; u++) {
+          for(uintV u = 0; u < n; u++) {
             if (frontier_curr[u]) {
               // compute source change in contribution
               sourceChangeInContribution<AggregationValueType, VertexValueType,
@@ -122,7 +122,7 @@ public:
           }
         }
 
-        parallel_for(uintV u = 0; u < n; u++) {
+        for(uintV u = 0; u < n; u++) {
           if (frontier_curr[u]) {
             // check for propagate and retract for the vertices.
             intE outDegree = my_graph.V[u].getOutDegree();
@@ -159,7 +159,7 @@ public:
         }
 
         // ========== VERTEX COMPUTATION ==========
-        parallel_for(uintV v = 0; v < n; v++) {
+        for(uintV v = 0; v < n; v++) {
           // Reset frontier for next iteration
           frontier_curr[v] = 0;
           // Process all vertices affected by EdgeMap
@@ -243,7 +243,7 @@ public:
     }
 
     // Reset values before incremental computation
-    parallel_for(uintV v = 0; v < n; v++) {
+    for(uintV v = 0; v < n; v++) {
       frontier_curr[v] = 0;
       frontier_next[v] = 0;
       changed[v] = 0;
@@ -273,7 +273,7 @@ public:
     global_info.processUpdates(edge_additions, edge_deletions);
 
     // ========== EDGE COMPUTATION - DIRECT CHANGES - for first iter ==========
-    parallel_for(long i = 0; i < edge_additions.size; i++) {
+    for(long i = 0; i < edge_additions.size; i++) {
       uintV source = edge_additions.E[i].source;
       uintV destination = edge_additions.E[i].destination;
 
@@ -326,7 +326,7 @@ public:
       }
     }
 
-    parallel_for(long i = 0; i < edge_deletions.size; i++) {
+    for(long i = 0; i < edge_deletions.size; i++) {
       uintV source = edge_deletions.E[i].source;
       uintV destination = edge_deletions.E[i].destination;
 
@@ -402,7 +402,7 @@ public:
         vertex_value_old_next = temp1;
 
         if (iter <= converged_iteration) {
-          parallel_for(uintV v = 0; v < n; v++) {
+          for(uintV v = 0; v < n; v++) {
             vertex_value_old_next[v] = vertex_values[iter][v];
           }
         } else {
@@ -414,7 +414,7 @@ public:
       // ========== EDGE COMPUTATION - TRANSITIVE CHANGES ==========
       if ((use_source_contribution) && (iter == 1)) {
         // Compute source contribution for first iteration
-        parallel_for(uintV u = 0; u < n; u++) {
+        for(uintV u = 0; u < n; u++) {
           if (frontier_curr[u]) {
             // compute source change in contribution
             AggregationValueType contrib_change =
@@ -435,7 +435,7 @@ public:
         }
       }
 
-      parallel_for(uintV u = 0; u < n; u++) {
+      for(uintV u = 0; u < n; u++) {
         if (frontier_curr[u]) {
           // check for propagate and retract for the vertices.
           intE outDegree = my_graph.V[u].getOutDegree();
@@ -478,7 +478,7 @@ public:
 
       // ========== VERTEX COMPUTATION  ==========
       bool use_delta_next_iteration = shouldUseDelta(iter + 1);
-      parallel_for(uintV v = 0; v < n; v++) {
+      for(uintV v = 0; v < n; v++) {
         // changed vertices need to be processed
         frontier_curr[v] = 0;
         if ((v >= n_old) && (changed[v] == false)) {
@@ -552,7 +552,7 @@ public:
 
       // ========== EDGE COMPUTATION - DIRECT CHANGES - for next iter ==========
       bool has_direct_changes = false;
-      parallel_for(long i = 0; i < edge_additions.size; i++) {
+      for(long i = 0; i < edge_additions.size; i++) {
         uintV source = edge_additions.E[i].source;
         uintV destination = edge_additions.E[i].destination;
         AggregationValueType contrib_change;
@@ -600,7 +600,7 @@ public:
         }
       }
 
-      parallel_for(long i = 0; i < edge_deletions.size; i++) {
+      for(long i = 0; i < edge_deletions.size; i++) {
         uintV source = edge_deletions.E[i].source;
         uintV destination = edge_deletions.E[i].destination;
         AggregationValueType contrib_change;

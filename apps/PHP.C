@@ -206,6 +206,8 @@ inline void computeFunction(const uintV &v,
                             const VertexValueType &vertex_value_curr,
                             VertexValueType &vertex_value_next,
                             GlobalInfoType &global_info) {
+  std::cout << "computeFunction " << v << " " << aggregation_value << " "
+            << vertex_value_curr << " " << vertex_value_next << std::endl;
   if (v == global_info.source == v) {
     vertex_value_next = 1;
   } else {
@@ -244,7 +246,8 @@ inline bool edgeFunction(const uintV &u, const uintV &v,
                          const VertexValueType &u_value,
                          AggregationValueType &u_change_in_contribution,
                          GlobalInfoType &global_info) {
-
+  std::cout << "edgeFunction " << u << " " << v << " " << edge_weight.weight
+            << " " << u_value << " " << u_change_in_contribution << std::endl;
 //  if(v == global_info.source) {
 //    return false;
 //  } else {
