@@ -95,6 +95,8 @@ public:
             aggregation_values[iter][v] = aggregation_values[iter - 1][v];
             delta[v] = aggregationValueIdentity<AggregationValueType>();
           }
+
+
         }
         use_delta = shouldUseDelta(iter);
 
@@ -220,6 +222,13 @@ public:
         if (frontier_curr_vs.isEmpty()) {
           break;
         }
+
+        if (isTerminated<AggregationValueType,
+                         GlobalInfoType>(vertex_values[iter],
+                                         global_info)) {
+          break;
+        }
+
       }
     }
     if (ae_enabled) {
@@ -655,6 +664,13 @@ public:
       iteration_time += iteration_timer.next();
 
       // Convergence check
+
+      if (isTerminated<AggregationValueType,
+                       GlobalInfoType>(vertex_values[iter],
+                                       global_info)) {
+        break;
+      }
+
       if (!has_direct_changes && frontier_curr_vs.isEmpty()) {
         // There are no more active vertices
         if (iter == converged_iteration) {

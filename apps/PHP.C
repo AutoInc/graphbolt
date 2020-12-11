@@ -18,6 +18,9 @@
 // LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// NOTE: The edge data type header file should then be included as the first header
+// file at the top of the user program.
+#include "PHP_edgeData.h"
 
 #include "../core/common/utils.h"
 #include "../core/graphBolt/GraphBoltEngine_simple.h"
@@ -25,30 +28,31 @@
 #include <math.h>
 
 // ======================================================================
-// PAGERANKINFO
+// PHPINFO
 // ======================================================================
-class PageRankInfo {
+class PHPInfo {
  public:
-  // Should I just use vectors for this?
   uintV n;
+  uintV source;
   double epsilon;
   double damping;
   long *out_degrees;
   double *answer;
 
-  PageRankInfo() : n(0), epsilon(0), damping(0), out_degrees(nullptr), answer(
-      nullptr) {
+  PHPInfo() : n(0), source(0), epsilon(0), damping(0), out_degrees(nullptr),
+      answer(nullptr) {
   }
 
-  PageRankInfo(uintV _n, double _epsilon, double _damping, double *_answer)
-      : n(_n), epsilon(_epsilon), damping(_damping), answer(_answer) {
+  PHPInfo(uintV _n, uintV source, double _epsilon, double _damping, double *_answer)
+      : n(_n), source(source), epsilon(_epsilon), damping(_damping),
+      answer(_answer){
     if (n > 0) {
       out_degrees = newA(long, n);
       parallel_for (uintV i = 0; i < n; i++) { out_degrees[i] = 0; }
     }
   }
 
-  void copy(const PageRankInfo &object) {
+  void copy(const PHPInfo &object) {
     if (object.n > n) {
       if (n == 0) {
         n = object.n;
@@ -63,12 +67,13 @@ class PageRankInfo {
     parallel_for (uintV i = 0; i < min_n; i++) {
       out_degrees[i] = object.out_degrees[i];
     }
+    source = object.source;
     epsilon = object.epsilon;
     damping = object.damping;
     answer = object.answer;
   }
 
-  ~PageRankInfo() {
+  ~PHPInfo() {
     if (n > 0)
       deleteA(out_degrees);
   }
@@ -106,7 +111,6 @@ class PageRankInfo {
 // AGGREGATEVALUE AND VERTEXVALUE INITIALIZATION
 // ======================================================================
 double initial_aggregation_value = 0;
-double initial_vertex_value = 0;
 double aggregation_value_identity = 0;
 double vertex_value_identity = 0;
 template<class AggregationValueType, class GlobalInfoType>
@@ -121,7 +125,7 @@ template<class VertexValueType, class GlobalInfoType>
 inline void initializeVertexValue(const uintV &v,
                                   VertexValueType &v_vertex_value,
                                   const GlobalInfoType &global_info) {
-  v_vertex_value = initial_vertex_value;
+  v_vertex_value = (v == global_info.source ? 1 : 0);
 }
 
 template<class AggregationValueType>
@@ -149,7 +153,7 @@ inline bool forceActivateVertexForIteration(const uintV &v, int iter,
 template<class GlobalInfoType>
 inline bool forceComputeVertexForIteration(const uintV &v, int iter,
                                            const GlobalInfoType &global_info) {
-  if (iter == 1) {
+  if (iter == 1 || v == global_info.source) {
     return true;
   } else {
     return false;
@@ -205,20 +209,21 @@ inline void computeFunction(const uintV &v,
                             const VertexValueType &vertex_value_curr,
                             VertexValueType &vertex_value_next,
                             GlobalInfoType &global_info) {
-  vertex_value_next =
-      (1 - global_info.damping) + (global_info.damping * aggregation_value);
+  if (v == global_info.source) {
+    vertex_value_next = 1;
+  } else {
+    vertex_value_next = global_info.damping * aggregation_value;
+  }
 }
 
+// All vertices are active
 template<class VertexValueType, class GlobalInfoType>
 inline bool isChanged(const VertexValueType &value_curr,
                       const VertexValueType &value_next,
                       GlobalInfoType &global_info) {
-  // return (fabs(value_next - value_curr) > global_info.epsilon);
-  // comment out this condition because of wrong result.
   return true;
 }
 
-// We determine termination based on the diff of sum of vertex values
 template<class VertexValueType, class GlobalInfoType>
 inline bool isTerminated(const VertexValueType *values_curr,
                          GlobalInfoType &global_info) {
@@ -245,7 +250,7 @@ inline void sourceChangeInContribution(
     StaticInfoType &global_info) {
   v_change_in_contribution =
       (global_info.getOutDegree(v) != 0)
-      ? (v_value_curr - v_value_prev) / global_info.getOutDegree(v)
+      ? v_value_curr - v_value_prev
       : 0;
 }
 
@@ -256,7 +261,13 @@ inline bool edgeFunction(const uintV &u, const uintV &v,
                          const VertexValueType &u_value,
                          AggregationValueType &u_change_in_contribution,
                          GlobalInfoType &global_info) {
-  return true;
+  if (v == global_info.source) {
+    return false;
+  } else {
+    u_change_in_contribution =
+        u_change_in_contribution * edge_weight.weight;
+    return true;
+  }
 }
 
 // ======================================================================
@@ -304,6 +315,7 @@ void printAdditionalData(ofstream &output_file, const uintV &v,
 template<class vertex>
 void compute(graph<vertex> &G, commandLine config) {
   uintV n = G.n;
+  uintV source = config.getOptionLongValue("-source", 0);
   double epsilon = config.getOptionDoubleValue("-epsilon", 0.01);
   double damping = config.getOptionDoubleValue("-damping", 0.8);
   int max_iters = config.getOptionLongValue("-maxIters", 10);
@@ -318,14 +330,13 @@ void compute(graph<vertex> &G, commandLine config) {
     ans = readAnswer<double>(answer_path.c_str());
   }
 
-  PageRankInfo
-      global_info(n, epsilon, damping, ans.empty() ? nullptr : ans.data());
+  PHPInfo global_info(n, source, epsilon, damping, ans.empty() ? nullptr : ans.data());
   parallel_for (uintV i = 0; i < n; i++) {
     global_info.out_degrees[i] = G.V[i].getOutDegree();
   }
 
   cout << "Initializing engine ....\n";
-  GraphBoltEngineSimple<vertex, double, double, PageRankInfo> engine(
+  GraphBoltEngineSimple<vertex, double, double, PHPInfo> engine(
       G, max_iters, global_info, false, config);
   engine.init();
   cout << "Finished initializing engine\n";

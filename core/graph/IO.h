@@ -36,6 +36,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <sstream>
 using namespace std;
 
 typedef pair<uintE, uintE> intPair;
@@ -471,5 +472,22 @@ template <class vertex>
 graph<vertex> readGraph(char *iFile, bool symmetric, bool isSimple,
                         bool debugFlag) {
   return readGraphFromFile<vertex>(iFile, symmetric, isSimple, debugFlag);
+}
+
+template<class T>
+std::vector<T> readAnswer(const char *path) {
+  std::ifstream infile(path);
+  std::string line;
+
+  while (std::getline(infile, line)) {
+    std::istringstream iss(line);
+    uintV v;
+    T val;
+
+    if (!(iss >> v >> val)) {
+      std::cerr << "Failed to parse answer: " << line << std::endl;
+      exit(1);
+    }
+  }
 }
 #endif
