@@ -264,6 +264,13 @@ inline bool shouldUseDelta(int iter) {
   return true;
 }
 
+template<class VertexValueType, class GlobalInfoType>
+inline bool isTerminated(const VertexValueType *values_curr,
+                         GlobalInfoType &global_info) {
+
+  return false;
+}
+
 // ======================================================================
 // ADD TO OR REMOVE FROM AGGREGATION VALUES
 // ======================================================================
