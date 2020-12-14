@@ -3,6 +3,7 @@ project(untitled)
 
 set(CMAKE_CXX_STANDARD 14)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall")
 
 add_executable(SSSP ${PROJECT_SOURCE_DIR}/apps/SSSP.C)
 target_compile_definitions(SSSP PUBLIC -DEDGEDATA)
