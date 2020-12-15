@@ -211,7 +211,7 @@ inline void computeFunction(const uintV &v,
                             VertexValueType &vertex_value_next,
                             GlobalInfoType &global_info) {
   vertex_value_next =
-      (1 - global_info.damping) + (global_info.damping * aggregation_value);
+      (1 - global_info.damping) / global_info.n  + (global_info.damping * aggregation_value);
 }
 
 template<class VertexValueType, class GlobalInfoType>
