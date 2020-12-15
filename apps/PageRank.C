@@ -234,7 +234,8 @@ inline bool isTerminated(const VertexValueType *values_curr,
       parallel_for (uintV v = 0; v < global_info.n; v++) {
         writeAdd(&diff_sum, fabs(values_curr[v] - ans[v]));
       }
-      std::cout << "Inc Diff sum: " << diff_sum << endl;
+      diff_sum /= global_info.n;
+      std::cout << "(Excluded) Inc Diff sum: " << diff_sum << endl;
       return diff_sum < global_info.epsilon;
     }
   } else {
@@ -244,10 +245,8 @@ inline bool isTerminated(const VertexValueType *values_curr,
       parallel_for (uintV v = 0; v < global_info.n; v++) {
         writeAdd(&diff_sum, fabs(values_curr[v] - ans[v]));
       }
-      for(uintV v = 0; v < global_info.n; v++){
-        std::cout << values_curr[v] << " vs " << ans[v] << std::endl;
-      }
-      std::cout << "Base Diff sum: " << diff_sum << endl;
+      diff_sum /= global_info.n;
+      std::cout << "(Excluded) Base Diff sum: " << diff_sum << endl;
       return diff_sum < global_info.epsilon;
     }
   }
