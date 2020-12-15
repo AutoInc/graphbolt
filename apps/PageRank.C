@@ -211,7 +211,7 @@ inline void computeFunction(const uintV &v,
                             VertexValueType &vertex_value_next,
                             GlobalInfoType &global_info) {
   vertex_value_next =
-      (1 - global_info.damping) + (global_info.damping * aggregation_value);
+      (1 - global_info.damping) / global_info.n + (global_info.damping * aggregation_value);
 }
 
 template<class VertexValueType, class GlobalInfoType>
@@ -234,7 +234,6 @@ inline bool isTerminated(const VertexValueType *values_curr,
       parallel_for (uintV v = 0; v < global_info.n; v++) {
         writeAdd(&diff_sum, fabs(values_curr[v] - ans[v]));
       }
-      diff_sum /= global_info.n;
       std::cout << "(Excluded) Inc Diff sum: " << diff_sum << endl;
       return diff_sum < global_info.epsilon;
     }
@@ -245,7 +244,6 @@ inline bool isTerminated(const VertexValueType *values_curr,
       parallel_for (uintV v = 0; v < global_info.n; v++) {
         writeAdd(&diff_sum, fabs(values_curr[v] - ans[v]));
       }
-      diff_sum /= global_info.n;
       std::cout << "(Excluded) Base Diff sum: " << diff_sum << endl;
       return diff_sum < global_info.epsilon;
     }
