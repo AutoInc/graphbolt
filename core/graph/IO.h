@@ -37,6 +37,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sstream>
+#include <memory>
 using namespace std;
 
 typedef pair<uintE, uintE> intPair;
