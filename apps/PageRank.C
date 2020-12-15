@@ -231,7 +231,7 @@ inline bool isTerminated(const VertexValueType *values_curr,
     if (global_info.answer_inc != nullptr) {
       auto&ans = *global_info.answer_inc;
       VertexValueType diff_sum = 0;
-      parallel_for (uintV v = 0; v < global_info.n; v++) {
+      parallel_for (uintV v = 1; v < global_info.n; v++) {
         writeAdd(&diff_sum, fabs(values_curr[v] - ans[v]));
       }
       std::cout << "Inc Diff sum: " << diff_sum;
@@ -241,7 +241,7 @@ inline bool isTerminated(const VertexValueType *values_curr,
     if (global_info.answer_base != nullptr) {
       auto&ans = *global_info.answer_base;
       VertexValueType diff_sum = 0;
-      parallel_for (uintV v = 0; v < global_info.n; v++) {
+      parallel_for (uintV v = 1; v < global_info.n; v++) {
         writeAdd(&diff_sum, fabs(values_curr[v] - ans[v]));
       }
       std::cout << "Base Diff sum: " << diff_sum;
