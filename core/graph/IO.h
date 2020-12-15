@@ -44,17 +44,22 @@ typedef pair<uintE, uintE> intPair;
 typedef pair<uintE, pair<uintE, EdgeData *>> intWeights;
 #endif
 
-template <class E> struct pairFirstCmp {
+template<class E>
+struct pairFirstCmp {
   bool operator()(pair<uintE, E> a, pair<uintE, E> b) {
     return a.first < b.first;
   }
 };
 
-template <class E> struct getFirst {
-  uintE operator()(pair<uintE, E> a) { return a.first; }
+template<class E>
+struct getFirst {
+  uintE operator()(pair<uintE, E> a) {
+    return a.first;
+  }
 };
 
-template <class IntType> struct pairBothCmp {
+template<class IntType>
+struct pairBothCmp {
   bool operator()(pair<uintE, IntType> a, pair<uintE, IntType> b) {
     if (a.first != b.first)
       return a.first < b.first;
@@ -87,9 +92,11 @@ struct words {
   char *Chars;     // array storing all strings
   unsigned long m; // number of substrings
   char **Strings;  // pointers to strings (all should be null terminated)
-  words() {}
+  words() {
+  }
   words(char *C, unsigned long nn, char **S, unsigned long mm)
-      : Chars(C), n(nn), Strings(S), m(mm) {}
+      : Chars(C), n(nn), Strings(S), m(mm) {
+  }
   void del() {
     free(Chars);
     free(Strings);
@@ -98,14 +105,12 @@ struct words {
 
 inline bool isSpace(char c) {
   switch (c) {
-  case '\r':
-  case '\t':
-  case '\n':
-  case 0:
-  case ' ':
-    return true;
-  default:
-    return false;
+    case '\r':
+    case '\t':
+    case '\n':
+    case 0:
+    case ' ':return true;
+    default:return false;
   }
 }
 
@@ -127,15 +132,18 @@ _seq<char> readStringFromFile(char *fileName) {
 // parallel code for converting a string to words
 words stringToWords(char *Str, unsigned long n) {
   {
-    parallel_for(unsigned long i = 0; i < n; i++) if (isSpace(Str[i])) Str[i] =
-        0;
+    parallel_for (unsigned long i = 0; i < n; i++)
+      if (isSpace(Str[i]))
+        Str[i] =
+            0;
   }
 
   // mark start of words
   bool *FL = newA(bool, n);
   FL[0] = Str[0];
   {
-    parallel_for(unsigned long i = 1; i < n; i++) FL[i] = Str[i] && !Str[i - 1];
+    parallel_for (unsigned long i = 1; i < n; i++)
+      FL[i] = Str[i] && !Str[i - 1];
   }
 
   // offset for each start of word
@@ -145,7 +153,7 @@ words stringToWords(char *Str, unsigned long n) {
 
   // pointer to each start of word
   char **SA = newA(char *, m);
-  { parallel_for(unsigned long j = 0; j < m; j++) SA[j] = Str + offsets[j]; }
+  { parallel_for (unsigned long j = 0; j < m; j++) SA[j] = Str + offsets[j]; }
 
   free(offsets);
   free(FL);
@@ -156,7 +164,7 @@ uintE removeDuplicates(intPair *&array, uintE length, bool symmetric,
                        bool debugFlag) {
   bool *flag = newAWithZero(bool, length);
   uintE invalidCount = 0;
-  parallel_for(uintE i = 1; i < length; i++) {
+  parallel_for (uintE i = 1; i < length; i++) {
     if (array[i].first == array[i - 1].first &&
         array[i].second == array[i - 1].second) {
       flag[i] = true;
@@ -206,7 +214,7 @@ uintE removeDuplicates(intWeights *&array, uintE length, bool symmetric,
                        bool debugFlag) {
   bool *flag = newAWithZero(bool, length);
   uintE invalidCount = 0;
-  parallel_for(uintE i = 1; i < length; i++) {
+  parallel_for (uintE i = 1; i < length; i++) {
     if (array[i].first == array[i - 1].first &&
         array[i].second.first == array[i - 1].second.first) {
       flag[i] = true;
@@ -255,7 +263,7 @@ uintE removeDuplicates(edge *&array, uintE length, uintE maxLength,
                        bool symmetric, bool debugFlag) {
   bool *flag = newAWithZero(bool, length);
   uintE invalidCount = 0;
-  parallel_for(uintE i = 1; i < length; i++) {
+  parallel_for (uintE i = 1; i < length; i++) {
     if (array[i].source == array[i - 1].source &&
         array[i].destination == array[i - 1].destination) {
       flag[i] = true;
@@ -306,7 +314,7 @@ uintE removeDuplicates(edge *&array, uintE length, uintE maxLength,
   return count;
 }
 
-template <class vertex>
+template<class vertex>
 graph<vertex> readGraphFromFile(char *fname, bool isSymmetric, bool simpleFlag,
                                 bool debugFlag) {
   words W;
@@ -315,7 +323,7 @@ graph<vertex> readGraphFromFile(char *fname, bool isSymmetric, bool simpleFlag,
 #ifdef EDGEDATA
   if (W.Strings[0] != (string) "WeightedAdjacencyGraph") {
 #else
-  if (W.Strings[0] != (string) "AdjacencyGraph") {
+    if (W.Strings[0] != (string) "AdjacencyGraph") {
 #endif
     cout << "Bad input file" << endl;
     abort();
@@ -332,7 +340,7 @@ graph<vertex> readGraphFromFile(char *fname, bool isSymmetric, bool simpleFlag,
 #ifdef EDGEDATA
   if (len != n + 2 * m + 2) {
 #else
-  if (len != n + m + 2) {
+    if (len != n + m + 2) {
 #endif
     cout << "Length" << len << endl;
     cout << "Bad input file" << endl;
@@ -345,14 +353,15 @@ graph<vertex> readGraphFromFile(char *fname, bool isSymmetric, bool simpleFlag,
   EdgeData *edgeData = newA(EdgeData, m);
 #endif
   {
-    parallel_for(unsigned long i = 0; i < n; i++) offsets[i] =
-        atol(W.Strings[i + 3]);
+    parallel_for (unsigned long i = 0; i < n; i++)
+      offsets[i] =
+          atol(W.Strings[i + 3]);
   }
   {
-    parallel_for(unsigned long i = 0; i < m; i++) {
+    parallel_for (unsigned long i = 0; i < m; i++) {
       edges[i] = atol(W.Strings[i + n + 3]);
 #ifdef EDGEDATA
-      new (edgeData + i) EdgeData();
+      new(edgeData + i) EdgeData();
       edgeData[i].createEdgeData(W.Strings[i + n + m + 3]);
 #endif
     }
@@ -360,7 +369,7 @@ graph<vertex> readGraphFromFile(char *fname, bool isSymmetric, bool simpleFlag,
   W.del(); // to deal with performance bug in malloc
   vertex *v = newA(vertex, n);
   {
-    parallel_for(uintV i = 0; i < n; i++) {
+    parallel_for (uintV i = 0; i < n; i++) {
       intE o = offsets[i];
       intE l = ((i == n - 1) ? m : offsets[i + 1]) - offsets[i];
       v[i].setOutDegree(l);
@@ -376,14 +385,14 @@ graph<vertex> readGraphFromFile(char *fname, bool isSymmetric, bool simpleFlag,
   // TODO: ADD SYMMETRIC SUPPORT
   if (!isSymmetric) {
     tOffsets = newA(intE, n);
-    { parallel_for(unsigned long i = 0; i < n; i++) tOffsets[i] = INT_E_MAX; }
+    { parallel_for (unsigned long i = 0; i < n; i++) tOffsets[i] = INT_E_MAX; }
 #ifdef EDGEDATA
     intWeights *temp = newA(intWeights, m);
 #else
     intPair *temp = newA(intPair, m);
 #endif
     {
-      parallel_for(unsigned long i = 0; i < n; i++) {
+      parallel_for (unsigned long i = 0; i < n; i++) {
         intE o = offsets[i];
         for (intE j = 0; j < v[i].getOutDegree(); j++) {
 #ifdef EDGEDATA
@@ -410,16 +419,16 @@ graph<vertex> readGraphFromFile(char *fname, bool isSymmetric, bool simpleFlag,
 #ifdef EDGEDATA
     inEdges[0] = temp[0].second.first;
     EdgeData *inEdgeData = newA(EdgeData, m);
-    new (inEdgeData) EdgeData();
+    new(inEdgeData) EdgeData();
     inEdgeData[0].setEdgeDataFromPtr(temp[0].second.second);
 #else
     inEdges[0] = temp[0].second;
 #endif
     {
-      parallel_for(unsigned long i = 1; i < m; i++) {
+      parallel_for (unsigned long i = 1; i < m; i++) {
 #ifdef EDGEDATA
         inEdges[i] = temp[i].second.first;
-        new (inEdgeData + i) EdgeData();
+        new(inEdgeData + i) EdgeData();
         inEdgeData[i].setEdgeDataFromPtr(temp[i].second.second);
 #else
         inEdges[i] = temp[i].second;
@@ -434,10 +443,10 @@ graph<vertex> readGraphFromFile(char *fname, bool isSymmetric, bool simpleFlag,
 
     // fill in offsets of degree 0 vertices by taking closest non-zero
     // offset to the right
-    sequence::scanIBack(tOffsets, tOffsets, n, minF<intE>(), (intE)m);
+    sequence::scanIBack(tOffsets, tOffsets, n, minF<intE>(), (intE) m);
 
     {
-      parallel_for(unsigned long i = 0; i < n; i++) {
+      parallel_for (unsigned long i = 0; i < n; i++) {
         uintE o = tOffsets[i];
         uintE l = ((i == n - 1) ? m : tOffsets[i + 1]) - tOffsets[i];
         v[i].setInDegree(l);
@@ -468,17 +477,19 @@ graph<vertex> readGraphFromFile(char *fname, bool isSymmetric, bool simpleFlag,
   }
 }
 
-template <class vertex>
+template<class vertex>
 graph<vertex> readGraph(char *iFile, bool symmetric, bool isSimple,
                         bool debugFlag) {
   return readGraphFromFile<vertex>(iFile, symmetric, isSimple, debugFlag);
 }
 
 template<class T>
-std::vector<T> readAnswer(const char *path) {
+std::shared_ptr<std::map<uintV, T>> readAnswer(const char *path) {
   std::ifstream infile(path);
   std::string line;
+  auto ans = std::make_shared<std::map<uintV, T>>();
 
+  auto &set = *ans;
   while (std::getline(infile, line)) {
     std::istringstream iss(line);
     uintV v;
@@ -488,6 +499,8 @@ std::vector<T> readAnswer(const char *path) {
       std::cerr << "Failed to parse answer: " << line << std::endl;
       exit(1);
     }
+    set[v] = val;
   }
+  return ans;
 }
 #endif

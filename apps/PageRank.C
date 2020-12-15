@@ -24,6 +24,8 @@
 #include "../core/main.h"
 #include <math.h>
 
+#include <utility>
+
 // ======================================================================
 // PAGERANKINFO
 // ======================================================================
@@ -34,18 +36,18 @@ class PageRankInfo {
   double epsilon;
   double damping;
   long *out_degrees;
-  double *answer_base;
-  double *answer_inc;
+  std::shared_ptr<std::map<uintV, double>> answer_base;
+  std::shared_ptr<std::map<uintV, double>> answer_inc;
 
   PageRankInfo()
       : n(0), epsilon(0), damping(0), out_degrees(nullptr), answer_base(
       nullptr), answer_inc(nullptr) {
   }
 
-  PageRankInfo(uintV _n, double _epsilon, double _damping, double *_answer_base,
-               double *_answer_inc)
-      : n(_n), epsilon(_epsilon), damping(_damping), answer_base(_answer_base),
-      answer_inc(_answer_inc) {
+  PageRankInfo(uintV _n, double _epsilon, double _damping, std::shared_ptr<std::map<uintV, double>> _answer_base,
+               std::shared_ptr<std::map<uintV, double>> _answer_inc)
+      : n(_n), epsilon(_epsilon), damping(_damping), answer_base(std::move(_answer_base)),
+      answer_inc(std::move(_answer_inc)) {
     if (n > 0) {
       out_degrees = newA(long, n);
       parallel_for (uintV i = 0; i < n; i++) { out_degrees[i] = 0; }
@@ -227,18 +229,20 @@ inline bool isTerminated(const VertexValueType *values_curr,
                          GlobalInfoType &global_info, bool isInc) {
   if (isInc) {
     if (global_info.answer_inc != nullptr) {
+      auto&ans = *global_info.answer_inc;
       VertexValueType diff_sum = 0;
       parallel_for (uintV v = 0; v < global_info.n; v++) {
-        writeAdd(&diff_sum, fabs(values_curr[v] - global_info.answer_inc[v]));
+        writeAdd(&diff_sum, fabs(values_curr[v] - ans[v]));
       }
       std::cout << "Inc Diff sum: " << diff_sum;
       return diff_sum < global_info.epsilon;
     }
   } else {
     if (global_info.answer_base != nullptr) {
+      auto&ans = *global_info.answer_base;
       VertexValueType diff_sum = 0;
       parallel_for (uintV v = 0; v < global_info.n; v++) {
-        writeAdd(&diff_sum, fabs(values_curr[v] - global_info.answer_base[v]));
+        writeAdd(&diff_sum, fabs(values_curr[v] - ans[v]));
       }
       std::cout << "Base Diff sum: " << diff_sum;
       return diff_sum < global_info.epsilon;
@@ -319,15 +323,15 @@ template<class vertex>
 void compute(graph<vertex> &G, commandLine config) {
   uintV n = G.n;
   double epsilon = config.getOptionDoubleValue("-epsilon", 0.01);
-  double damping = config.getOptionDoubleValue("-damping", 0.8);
+  double damping = config.getOptionDoubleValue("-damping", 0.85);
   int max_iters = config.getOptionLongValue("-maxIters", 10);
   std::string answer_base_path = config.getOptionValue("-answer_base", "");
   std::string answer_inc_path = config.getOptionValue("-answer_inc", "");
 
   max_iters += 1;
 
-  std::vector<double> ans_base;
-  std::vector<double> ans_inc;
+  std::shared_ptr<std::map<uintV, double>> ans_base;
+  std::shared_ptr<std::map<uintV, double>> ans_inc;
 
   if (!answer_base_path.empty()) {
     cout << "Loading answer base file..." << endl;
@@ -341,8 +345,8 @@ void compute(graph<vertex> &G, commandLine config) {
 
   PageRankInfo
       global_info
-      (n, epsilon, damping, ans_base.empty() ? nullptr : ans_base.data(),
-       ans_inc.empty() ? nullptr : ans_inc.data());
+      (n, epsilon, damping, ans_base,
+       ans_inc);
   parallel_for (uintV i = 0; i < n; i++) {
     global_info.out_degrees[i] = G.V[i].getOutDegree();
   }
