@@ -34,14 +34,18 @@ class PageRankInfo {
   double epsilon;
   double damping;
   long *out_degrees;
-  double *answer;
+  double *answer_base;
+  double *answer_inc;
 
-  PageRankInfo() : n(0), epsilon(0), damping(0), out_degrees(nullptr), answer(
-      nullptr) {
+  PageRankInfo()
+      : n(0), epsilon(0), damping(0), out_degrees(nullptr), answer_base(
+      nullptr), answer_inc(nullptr) {
   }
 
-  PageRankInfo(uintV _n, double _epsilon, double _damping, double *_answer)
-      : n(_n), epsilon(_epsilon), damping(_damping), answer(_answer) {
+  PageRankInfo(uintV _n, double _epsilon, double _damping, double *_answer_base,
+               double *_answer_inc)
+      : n(_n), epsilon(_epsilon), damping(_damping), answer_base(_answer_base),
+      answer_inc(_answer_inc) {
     if (n > 0) {
       out_degrees = newA(long, n);
       parallel_for (uintV i = 0; i < n; i++) { out_degrees[i] = 0; }
@@ -65,7 +69,8 @@ class PageRankInfo {
     }
     epsilon = object.epsilon;
     damping = object.damping;
-    answer = object.answer;
+    answer_base = object.answer_base;
+    answer_inc = object.answer_inc;
   }
 
   ~PageRankInfo() {
@@ -84,12 +89,10 @@ class PageRankInfo {
 
     parallel_for (long i = 0; i < edge_additions.size; i++) {
       uintV source = edge_additions.E[i].source;
-      uintV destination = edge_additions.E[i].destination;
       writeAdd(&out_degrees[source], (long) 1);
     }
     parallel_for (long i = 0; i < edge_deletions.size; i++) {
       uintV source = edge_deletions.E[i].source;
-      uintV destination = edge_deletions.E[i].destination;
       writeAdd(&out_degrees[source], (long) -1);
     }
   }
@@ -221,14 +224,25 @@ inline bool isChanged(const VertexValueType &value_curr,
 // We determine termination based on the diff of sum of vertex values
 template<class VertexValueType, class GlobalInfoType>
 inline bool isTerminated(const VertexValueType *values_curr,
-                         GlobalInfoType &global_info) {
-  if (global_info.answer != nullptr) {
-    VertexValueType diff_sum = 0;
-    parallel_for (uintV v = 0; v < global_info.n; v++) {
-      writeAdd(&diff_sum, fabs(values_curr[v] - global_info.answer[v]));
+                         GlobalInfoType &global_info, bool isInc) {
+  if (isInc) {
+    if (global_info.answer_inc != nullptr) {
+      VertexValueType diff_sum = 0;
+      parallel_for (uintV v = 0; v < global_info.n; v++) {
+        writeAdd(&diff_sum, fabs(values_curr[v] - global_info.answer_inc[v]));
+      }
+      std::cout << "Inc Diff sum: " << diff_sum;
+      return diff_sum < global_info.epsilon;
     }
-    std::cout << "Diff sum: " << diff_sum;
-    return diff_sum < global_info.epsilon;
+  } else {
+    if (global_info.answer_base != nullptr) {
+      VertexValueType diff_sum = 0;
+      parallel_for (uintV v = 0; v < global_info.n; v++) {
+        writeAdd(&diff_sum, fabs(values_curr[v] - global_info.answer_base[v]));
+      }
+      std::cout << "Base Diff sum: " << diff_sum;
+      return diff_sum < global_info.epsilon;
+    }
   }
 
   return false;
@@ -307,19 +321,28 @@ void compute(graph<vertex> &G, commandLine config) {
   double epsilon = config.getOptionDoubleValue("-epsilon", 0.01);
   double damping = config.getOptionDoubleValue("-damping", 0.8);
   int max_iters = config.getOptionLongValue("-maxIters", 10);
-  std::string answer_path = config.getOptionValue("-answer", "");
+  std::string answer_base_path = config.getOptionValue("-answer_base", "");
+  std::string answer_inc_path = config.getOptionValue("-answer_inc", "");
 
   max_iters += 1;
 
-  std::vector<double> ans;
+  std::vector<double> ans_base;
+  std::vector<double> ans_inc;
 
-  if (!answer_path.empty()) {
-    cout << "Loading answer file..." << endl;
-    ans = readAnswer<double>(answer_path.c_str());
+  if (!answer_base_path.empty()) {
+    cout << "Loading answer base file..." << endl;
+    ans_base = readAnswer<double>(answer_base_path.c_str());
+  }
+
+  if (!answer_inc_path.empty()) {
+    cout << "Loading answer inc file..." << endl;
+    ans_inc = readAnswer<double>(answer_inc_path.c_str());
   }
 
   PageRankInfo
-      global_info(n, epsilon, damping, ans.empty() ? nullptr : ans.data());
+      global_info
+      (n, epsilon, damping, ans_base.empty() ? nullptr : ans_base.data(),
+       ans_inc.empty() ? nullptr : ans_inc.data());
   parallel_for (uintV i = 0; i < n; i++) {
     global_info.out_degrees[i] = G.V[i].getOutDegree();
   }

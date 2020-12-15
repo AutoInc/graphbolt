@@ -158,7 +158,7 @@ inline bool isChanged(const VertexValueType &vertex_value_prev,
 // An function to determine whether to stop the computation
 template<class VertexValueType, class GlobalInfoType>
 inline bool isTerminated(const VertexValueType *values_curr,
-                         GlobalInfoType &global_info);
+                         GlobalInfoType &global_info, bool isInc);
 // ======================================================================
 // EDGE FUNCTIONS
 // ======================================================================

@@ -225,7 +225,7 @@ public:
 
         if (isTerminated<AggregationValueType,
                          GlobalInfoType>(vertex_values[iter],
-                                         global_info)) {
+                                         global_info, false)) {
           break;
         }
 
@@ -667,7 +667,7 @@ public:
 
       if (isTerminated<AggregationValueType,
                        GlobalInfoType>(vertex_values[iter],
-                                       global_info)) {
+                                       global_info, true)) {
         break;
       }
 
