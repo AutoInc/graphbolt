@@ -225,7 +225,7 @@ inline bool isTerminated(const VertexValueType *vertex_value_prev,
                          const VertexValueType *vertex_value_curr,
                          GlobalInfoType &global_info) {
   VertexValueType diff_sum = 0;
-  parallel_for (uintV v = 0; v < global_info.n; v++) {
+  for (uintV v = 0; v < global_info.n; v++) {
     writeAdd(&diff_sum, fabs(vertex_value_curr[v] - vertex_value_prev[v]));
   }
   std::cout << "(Excluded) Diff sum: " << diff_sum << endl;
