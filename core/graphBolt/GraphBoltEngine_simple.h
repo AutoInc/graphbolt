@@ -249,6 +249,7 @@ class GraphBoltEngineSimple
   void deltaCompute(edgeArray &edge_additions, edgeArray &edge_deletions) {
     timer iteration_timer, phase_timer, full_timer;
     double iteration_time = 0;
+    double inc_checking_time = 0;
     full_timer.start();
 
     // TODO : Realloc addition of new vertices
@@ -688,7 +689,7 @@ class GraphBoltEngineSimple
                                   GlobalInfoType>(vertex_values[iter - 1],
                                                   vertex_values[iter],
                                                   global_info);
-      this->inc_checking_time += timer.stop();
+      inc_checking_time += timer.stop();
       if (stopped) {
         break;
       }

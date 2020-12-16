@@ -297,7 +297,6 @@ public:
   AdaptiveExecutor adaptive_executor;
   bool ae_enabled;
   double initial_checking_time = 0;
-  double inc_checking_time = 0;
 
   // ======================================================================
   // CONSTRUCTOR / INIT
