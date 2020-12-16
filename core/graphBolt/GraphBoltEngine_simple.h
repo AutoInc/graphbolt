@@ -716,7 +716,7 @@ class GraphBoltEngineSimple
       iteration_time = iteration_timer.next();
     }
 
-    cout << "Finished batch : " << full_timer.stop() - this->inc_checking_time
+    cout << "Finished batch : " << full_timer.stop() - inc_checking_time
          << "\n";
     cout << "Number of iterations : " << converged_iteration << "\n";
     // testPrint();
