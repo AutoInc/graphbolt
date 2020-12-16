@@ -39,8 +39,8 @@ class PHPInfo {
   double epsilon;
   double damping;
   long *out_degrees;
-  std::shared_ptr<std::map<uintV, double>> answer_base;
-  std::shared_ptr<std::map<uintV, double>> answer_inc;
+  std::shared_ptr<std::unordered_map<uintV, double>> answer_base;
+  std::shared_ptr<std::unordered_map<uintV, double>> answer_inc;
 
   PHPInfo() : n(0), source(0), epsilon(0), damping(0), out_degrees(nullptr),
       answer_base(nullptr), answer_inc(nullptr) {
@@ -50,8 +50,8 @@ class PHPInfo {
           uintV source,
           double _epsilon,
           double _damping,
-          std::shared_ptr<std::map<uintV, double>> _answer_base,
-          std::shared_ptr<std::map<uintV, double>> _answer_inc)
+          std::shared_ptr<std::unordered_map<uintV, double>> _answer_base,
+          std::shared_ptr<std::unordered_map<uintV, double>> _answer_inc)
       : n(_n), source(source), epsilon(_epsilon), damping(_damping),
       answer_base(std::move(_answer_base)),
       answer_inc(std::move(_answer_inc)) {
@@ -346,8 +346,8 @@ void compute(graph<vertex> &G, commandLine config) {
 
   max_iters += 1;
 
-  std::shared_ptr<std::map<uintV, double>> ans_base;
-  std::shared_ptr<std::map<uintV, double>> ans_inc;
+  std::shared_ptr<std::unordered_map<uintV, double>> ans_base;
+  std::shared_ptr<std::unordered_map<uintV, double>> ans_inc;
 
   if (!answer_base_path.empty()) {
     cout << "Loading base answer file..." << endl;

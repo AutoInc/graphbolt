@@ -38,6 +38,7 @@
 #include <unistd.h>
 #include <sstream>
 #include <memory>
+#include <unordered_map>
 using namespace std;
 
 typedef pair<uintE, uintE> intPair;
@@ -485,10 +486,10 @@ graph<vertex> readGraph(char *iFile, bool symmetric, bool isSimple,
 }
 
 template<class T>
-std::shared_ptr<std::map<uintV, T>> readAnswer(const char *path) {
+std::shared_ptr<std::unordered_map<uintV, T>> readAnswer(const char *path) {
   std::ifstream infile(path);
   std::string line;
-  auto ans = std::make_shared<std::map<uintV, T>>();
+  auto ans = std::make_shared<std::unordered_map<uintV, T>>();
 
   auto &set = *ans;
   while (std::getline(infile, line)) {
