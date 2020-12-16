@@ -31,7 +31,7 @@ enum UpdateType { edge_addition_enum, edge_deletion_enum };
 
 #ifdef EDGEDATA
 #else
-struct EmptyEdgeData{};
+struct EmptyEdgeData {};
 typedef EmptyEdgeData EdgeData;
 
 EdgeData emptyEdgeData;
@@ -42,7 +42,7 @@ EdgeData emptyEdgeData;
 // ======================================================================
 // Set the initial aggregation value of the vertex. Usually, 0 for aggregations
 // like sum and 1 for product.
-template <class AggregationValueType, class GlobalInfoType>
+template<class AggregationValueType, class GlobalInfoType>
 inline void
 initializeAggregationValue(const uintV &v,
                            AggregationValueType &v_aggregation_value,
@@ -50,17 +50,18 @@ initializeAggregationValue(const uintV &v,
 
 // Set the initial value of the vertex. For example, initial value of vertex is
 // set as 1 for PageRank
-template <class VertexValueType, class GlobalInfoType>
+template<class VertexValueType, class GlobalInfoType>
 inline void initializeVertexValue(const uintV &v,
                                   VertexValueType &v_vertex_value,
                                   const GlobalInfoType &global_info);
 
 // Return the identity value for the aggregation value. For sum, the identity
 // value is 0. For product, it is 1.
-template <class AggregationValueType>
+template<class AggregationValueType>
 // Return the identity value for the vertex value.
 inline AggregationValueType &aggregationValueIdentity();
-template <class VertexValueType> inline VertexValueType &vertexValueIdentity();
+template<class VertexValueType>
+inline VertexValueType &vertexValueIdentity();
 
 // ======================================================================
 // ACTIVATE VERTEX/COMPUTE VERTEX FOR A GIVEN ITERATION
@@ -70,7 +71,7 @@ template <class VertexValueType> inline VertexValueType &vertexValueIdentity();
 // first iteration. In CF (ALS), in first iteration, all partition2 vertices
 // should be active and in second iteration, all partition1 vertices should be
 // active
-template <class GlobalInfoType>
+template<class GlobalInfoType>
 inline bool forceActivateVertexForIteration(const uintV &v, int iter,
                                             const GlobalInfoType &global_info);
 
@@ -79,7 +80,7 @@ inline bool forceActivateVertexForIteration(const uintV &v, int iter,
 // the vertex irrespective of whether the vertex receives any change for that
 // iteration. This function is used to force the computation of a vertex at a
 // given iteration.
-template <class GlobalInfoType>
+template<class GlobalInfoType>
 inline bool forceComputeVertexForIteration(const uintV &v, int iter,
                                            const GlobalInfoType &global_info);
 
@@ -97,7 +98,7 @@ inline bool shouldUseDelta(int iter);
 // Function to add a value to an aggregate_value. For aggregations like sum,
 // simply add the incoming_value to the aggregate_value. No need for locks or
 // CAS within this function.
-template <class AggregationValueType, class GlobalInfoType>
+template<class AggregationValueType, class GlobalInfoType>
 inline void addToAggregation(const AggregationValueType &incoming_value,
                              AggregationValueType &aggregate_value,
                              GlobalInfoType &global_info);
@@ -105,7 +106,7 @@ inline void addToAggregation(const AggregationValueType &incoming_value,
 // Function to add a value to an aggregate_value. For aggregations like sum,
 // simply add the incoming_value to the aggregate_value. Use CAS for atomically
 // updating the aggregate_value.
-template <class AggregationValueType, class GlobalInfoType>
+template<class AggregationValueType, class GlobalInfoType>
 inline void addToAggregationAtomic(const AggregationValueType &incoming_value,
                                    AggregationValueType &aggregate_value,
                                    GlobalInfoType &global_info);
@@ -113,7 +114,7 @@ inline void addToAggregationAtomic(const AggregationValueType &incoming_value,
 // Function to remove a value from an aggregate_value. For aggregations like
 // sum, simply subtract the incoming_value from the aggregate_value. No need for
 // locks or CAS within this function.
-template <class AggregationValueType, class GlobalInfoType>
+template<class AggregationValueType, class GlobalInfoType>
 inline void removeFromAggregation(const AggregationValueType &incoming_value,
                                   AggregationValueType &aggregate_value,
                                   GlobalInfoType &global_info);
@@ -121,7 +122,7 @@ inline void removeFromAggregation(const AggregationValueType &incoming_value,
 // Function to remove a value from an aggregate_value. For aggregations like
 // sum, simply subtract the incoming_value from the aggregate_value. Use CAS for
 // atomically updating the aggregate_value.
-template <class AggregationValueType, class GlobalInfoType>
+template<class AggregationValueType, class GlobalInfoType>
 inline void
 removeFromAggregationAtomic(const AggregationValueType &incoming_value,
                             AggregationValueType &aggregate_value,
@@ -135,8 +136,8 @@ removeFromAggregationAtomic(const AggregationValueType &incoming_value,
 // compute vertex_value_curr from its aggregation_value. For Label Propagation,
 // the computation is based on the aggregation_value as well as its previous
 // vertex_value_prev.
-template <class AggregationValueType, class VertexValueType,
-          class GlobalInfoType>
+template<class AggregationValueType, class VertexValueType,
+    class GlobalInfoType>
 inline void computeFunction(const uintV &v,
                             const AggregationValueType &aggregation_value,
                             const VertexValueType &vertex_value_prev,
@@ -150,7 +151,7 @@ inline void computeFunction(const uintV &v,
 // when the vertex does not have significant change in its value at iteration
 // 'i', the change could become significant in a future iteration as it keeps
 // accumulating these changes at every iteration.
-template <class VertexValueType, class GlobalInfoType>
+template<class VertexValueType, class GlobalInfoType>
 inline bool isChanged(const VertexValueType &vertex_value_prev,
                       const VertexValueType &vertex_value_curr,
                       GlobalInfoType &global_info);
@@ -176,8 +177,8 @@ inline bool isTerminated(const VertexValueType *vertex_value_prev,
 // case of delta-based computation, it pushes out (PR_curr[v] -
 // PR_prev[v])/out_degree[v]. NOTE: change_in_contribution can be directly
 // updated in place. No LOCKS/CAS required for updating u_change_in_contribution
-template <class AggregationValueType, class VertexValueType,
-          class GlobalInfoType>
+template<class AggregationValueType, class VertexValueType,
+    class GlobalInfoType>
 inline void sourceChangeInContribution(
     const uintV &v, AggregationValueType &v_change_in_contribution,
     const VertexValueType &v_value_prev, const VertexValueType &v_value_curr,
@@ -189,13 +190,22 @@ inline void sourceChangeInContribution(
 // value from u should not be included in the aggregation value of v. Return
 // true otherwise. NOTE: The changes to change_in_contribution should be made in
 // place. No LOCKS/CAS required for updating u_change_in_contribution
-template <class AggregationValueType, class VertexValueType, class EdgeDataType,
-          class GlobalInfoType>
+template<class AggregationValueType, class VertexValueType, class EdgeDataType,
+    class GlobalInfoType>
 inline bool edgeFunction(const uintV &u, const uintV &v,
                          const EdgeDataType &edge_data,
+                         const EdgeDataType &agg_e,
                          const VertexValueType &u_value,
                          AggregationValueType &u_change_in_contribution,
                          GlobalInfoType &global_info);
+
+// Hack
+template<class EdgeDataType, class GlobalInfoType>
+inline void AggregateEdge(const intV &u,
+                          const uintV &v,
+                          const EdgeDataType &in,
+                          EdgeDataType *out,
+                          GlobalInfoType &global_info);
 
 // ======================================================================
 // INCREMENTAL COMPUTING / DETERMINING FRONTIER
@@ -209,7 +219,7 @@ inline bool edgeFunction(const uintV &u, const uintV &v,
 // the relevant information required (for algorithm/application) for a given
 // graph version in the global_info object. Example: out_degree of all vertices
 // has to be stored for a given graph.
-template <class GlobalInfoType>
+template<class GlobalInfoType>
 inline void hasSourceChangedByUpdate(const uintV &v, UpdateType update_type,
                                      bool &activateInCurrentIteration,
                                      GlobalInfoType &global_info,
@@ -220,7 +230,7 @@ inline void hasSourceChangedByUpdate(const uintV &v, UpdateType update_type,
 // iteration. NOTE: Ensure that you store the relevant information required (for
 // algorithm/application) for a given graph version in the global_info object.
 // Example: out_degree of all vertices has to be stored for a given graph.
-template <class GlobalInfoType>
+template<class GlobalInfoType>
 inline void hasDestinationChangedByUpdate(const uintV &v,
                                           UpdateType update_type,
                                           bool &activateInCurrentIteration,
@@ -231,13 +241,13 @@ inline void hasDestinationChangedByUpdate(const uintV &v,
 // HELPER FUNCTIONS
 // ======================================================================
 // Helper function for printing additional data while printing to output file
-template <class GlobalInfoType>
+template<class GlobalInfoType>
 void printAdditionalData(ofstream &output_file, const uintV &v,
                          GlobalInfoType &info);
 
 // Helper function for printing the dependency data - Useful for debugging
-template <class AggregationValueType, class VertexValueType,
-          class GlobalInfoType>
+template<class AggregationValueType, class VertexValueType,
+    class GlobalInfoType>
 void printHistory(const uintV &v, AggregationValueType **agg_values,
                   VertexValueType **vertex_values, GlobalInfoType &info,
                   int history_iterations);
@@ -245,11 +255,11 @@ void printHistory(const uintV &v, AggregationValueType **agg_values,
 // ======================================================================
 // GRAPHBOLT ENGINE
 // ======================================================================
-template <class vertex, class AggregationValueType, class VertexValueType,
-          class GlobalInfoType>
+template<class vertex, class AggregationValueType, class VertexValueType,
+    class GlobalInfoType>
 class GraphBoltEngine {
 
-public:
+ public:
   graph<vertex> &my_graph;
   commandLine config;
 
@@ -305,10 +315,10 @@ public:
                   GlobalInfoType &_global_info, bool _use_lock,
                   commandLine _config)
       : my_graph(_my_graph), max_iterations(_max_iter),
-        history_iterations(_max_iter), converged_iteration(_max_iter),
-        global_info(_global_info), use_lock(_use_lock), global_info_old(),
-        config(_config), ingestor(_my_graph, _config), current_batch(0),
-        adaptive_executor(history_iterations) {
+      history_iterations(_max_iter), converged_iteration(_max_iter),
+      global_info(_global_info), use_lock(_use_lock), global_info_old(),
+      config(_config), ingestor(_my_graph, _config), current_batch(0),
+      adaptive_executor(history_iterations) {
     n = my_graph.n;
     n_old = 0;
     if (use_lock) {
@@ -343,19 +353,25 @@ public:
   // ======================================================================
   // CREATE / DESTROY LOCKS
   // ======================================================================
-  void createLocks() { vertex_locks = newA(RWLock, n); }
+  void createLocks() {
+    vertex_locks = newA(RWLock, n);
+  }
   void resizeLocks() {
     vertex_locks = renewA(RWLock, vertex_locks, n);
     initLocks(n_old, n);
   }
-  void initLocks() { initLocks(0, n); }
+  void initLocks() {
+    initLocks(0, n);
+  }
   void initLocks(long start_index, long end_index) {
-    parallel_for(long i = start_index; i < end_index; i++) {
+    parallel_for (long i = start_index; i < end_index; i++) {
       vertex_locks[i].init();
     }
   }
   void destroyLocks(long array_size) {
-    parallel_for(long i = 0; i < array_size; i++) { vertex_locks[i].destroy(); }
+    parallel_for (long i = 0; i < array_size; i++) {
+      vertex_locks[i].destroy();
+    }
   }
 
   // ======================================================================
@@ -385,10 +401,12 @@ public:
     deleteA(aggregation_values);
     deleteA(vertex_values);
   }
-  void initDependencyData() { initDependencyData(0, n); }
+  void initDependencyData() {
+    initDependencyData(0, n);
+  }
   void initDependencyData(long start_index, long end_index) {
     for (int iter = 0; iter < history_iterations; iter++) {
-      parallel_for(long v = start_index; v < end_index; v++) {
+      parallel_for (long v = start_index; v < end_index; v++) {
         initializeAggregationValue<AggregationValueType, GlobalInfoType>(
             v, aggregation_values[iter][v], global_info);
         initializeVertexValue<VertexValueType, GlobalInfoType>(
@@ -425,9 +443,11 @@ public:
     if (use_source_contribution)
       deleteA(source_change_in_contribution);
   }
-  virtual void initTemporaryStructures() { initTemporaryStructures(0, n); }
+  virtual void initTemporaryStructures() {
+    initTemporaryStructures(0, n);
+  }
   virtual void initTemporaryStructures(long start_index, long end_index) {
-    parallel_for(long v = start_index; v < end_index; v++) {
+    parallel_for (long v = start_index; v < end_index; v++) {
       vertex_value_old_next[v] = vertexValueIdentity<VertexValueType>();
       vertex_value_old_curr[v] = vertexValueIdentity<VertexValueType>();
       vertex_value_old_prev[v] = vertexValueIdentity<VertexValueType>();
@@ -466,9 +486,11 @@ public:
     deleteA(retract);
     deleteA(propagate);
   }
-  void initVertexSubsets() { initVertexSubsets(0, n); }
+  void initVertexSubsets() {
+    initVertexSubsets(0, n);
+  }
   void initVertexSubsets(long start_index, long end_index) {
-    parallel_for(long j = start_index; j < end_index; j++) {
+    parallel_for (long j = start_index; j < end_index; j++) {
       all[j] = 1;
       frontier_curr[j] = 0;
       frontier_next[j] = 0;
@@ -559,14 +581,15 @@ public:
     // Initilaize frontier
     // The other values are already initialized with the default values during
     // initialization of the GraphBoltEngineSimple3
-    parallel_for(uintV v = 0; v < n; v++) {
+    parallel_for (uintV v = 0; v < n; v++) {
       frontier_next[v] = 0;
       frontier_curr[v] = 0;
       frontier_curr[v] = forceActivateVertexForIteration(v, 1, global_info);
     }
     int iters = traditionalIncrementalComputation(1);
 
-    cout << "Initial graph processing : " << full_timer.stop() - initial_checking_time << "\n";
+    cout << "Initial graph processing : "
+         << full_timer.stop() - initial_checking_time << "\n";
     cout << "Number of iterations : " << iters << "\n";
     printOutput();
     // testPrint();
@@ -586,7 +609,7 @@ public:
       }
     }
     // Update approximate_time_for_prev_iteration for next iteration
-    parallel_for(uintV v = 0; v < n; v++) {
+    parallel_for (uintV v = 0; v < n; v++) {
       if (isChanged(vertex_values[iter][v], vertex_values[iter - 1][v],
                     global_info) ||
           forceActivateVertexForIteration(v, iter + 1, global_info)) {
@@ -598,7 +621,7 @@ public:
       }
     }
     long active_edges =
-        sequence::plusReduceDegree(my_graph.V, frontier_next, (long)n);
+        sequence::plusReduceDegree(my_graph.V, frontier_next, (long) n);
     adaptive_executor.updateApproximateTimeForEdges(active_edges);
 
     return false;
@@ -607,7 +630,7 @@ public:
   int performSwitch(int iter) {
     // If called at beginning of iteration, use iter-1 and iter-2 to decide
     // whether a vertex is active
-    parallel_for(uintV v = 0; v < n; v++) {
+    parallel_for (uintV v = 0; v < n; v++) {
       if (isChanged(vertex_values[iter - 1][v], vertex_values[iter - 2][v],
                     global_info) ||
           forceActivateVertexForIteration(v, iter, global_info)) {

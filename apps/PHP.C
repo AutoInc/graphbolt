@@ -250,10 +250,22 @@ inline void sourceChangeInContribution(
       : 0;
 }
 
+template<class EdgeDataType, class GlobalInfoType>
+void AggregateEdge(const intV &u,
+                   const uintV &v,
+                   const EdgeDataType &in,
+                   EdgeDataType *out,
+                   GlobalInfoType &global_info) {
+  if (v != global_info.source) {
+    writeAdd(&out->weight, in.weight);
+  }
+}
+
 template<class AggregationValueType, class VertexValueType, class EdgeDataType,
     class GlobalInfoType>
 inline bool edgeFunction(const uintV &u, const uintV &v,
                          const EdgeDataType &edge_weight,
+                         const EdgeDataType &agg_e,
                          const VertexValueType &u_value,
                          AggregationValueType &u_change_in_contribution,
                          GlobalInfoType &global_info) {
@@ -261,7 +273,7 @@ inline bool edgeFunction(const uintV &u, const uintV &v,
     return false;
   } else {
     u_change_in_contribution =
-        u_change_in_contribution * edge_weight.weight;
+        u_change_in_contribution * edge_weight.weight / agg_e.weight;
     return true;
   }
 }

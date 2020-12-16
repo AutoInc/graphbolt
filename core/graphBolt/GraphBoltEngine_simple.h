@@ -129,6 +129,19 @@ class GraphBoltEngineSimple
           if (frontier_curr[u]) {
             // check for propagate and retract for the vertices.
             intE outDegree = my_graph.V[u].getOutDegree();
+#ifdef EDGEDATA
+            EdgeData tmp;
+            EdgeData *agg_e = &tmp;
+
+            granular_for(j, 0, outDegree, (outDegree > 1024), {
+              uintV v = my_graph.V[u].getOutNeighbor(j);
+              EdgeData *edge_data = my_graph.V[u].getOutEdgeData(j);
+
+              AggregateEdge(u, v, *edge_data, agg_e, global_info);
+            });
+#else
+            EdgeData *agg_e = &emptyEdgeData;
+#endif
             granular_for(j, 0, outDegree, (outDegree > 1024), {
               uintV v = my_graph.V[u].getOutNeighbor(j);
               AggregationValueType contrib_change =
@@ -141,8 +154,13 @@ class GraphBoltEngineSimple
               EdgeData *edge_data = &emptyEdgeData;
 #endif
               bool ret =
-                  edgeFunction(u, v, *edge_data, vertex_values[iter - 1][u],
-                               contrib_change, global_info);
+                  edgeFunction(u,
+                               v,
+                               *edge_data,
+                               *agg_e,
+                               vertex_values[iter - 1][u],
+                               contrib_change,
+                               global_info);
               if (ret) {
                 if (use_lock) {
                   vertex_locks[v].writeLock();
@@ -289,6 +307,23 @@ class GraphBoltEngineSimple
     global_info.processUpdates(edge_additions, edge_deletions);
 
     // ========== EDGE COMPUTATION - DIRECT CHANGES - for first iter ==========
+#ifdef EDGEDATA
+    EdgeData tmp_add;
+    EdgeData *agg_e_for_add = &tmp_add;
+
+    parallel_for (long i = 0; i < edge_additions.size; i++) {
+      uintV source = edge_additions.E[i].source;
+      uintV destination = edge_additions.E[i].destination;
+
+      AggregateEdge(source,
+                    destination,
+                    *edge_additions.E[i].edgeData,
+                    agg_e_for_add,
+                    global_info);
+    }
+#else
+    EdgeData *agg_e_for_add = &emptyEdgeData;
+#endif
     parallel_for (long i = 0; i < edge_additions.size; i++) {
       uintV source = edge_additions.E[i].source;
       uintV destination = edge_additions.E[i].destination;
@@ -327,6 +362,7 @@ class GraphBoltEngineSimple
             edgeFunction(source,
                          destination,
                          *edge_data,
+                         *agg_e_for_add,
                          vertex_values[0][source],
                          contrib_change,
                          global_info);
@@ -346,6 +382,23 @@ class GraphBoltEngineSimple
       }
     }
 
+#ifdef EDGEDATA
+    EdgeData tmp_del;
+    EdgeData *agg_e_for_del = &tmp_del;
+
+    parallel_for (long i = 0; i < edge_additions.size; i++) {
+      uintV source = edge_additions.E[i].source;
+      uintV destination = edge_additions.E[i].destination;
+
+      AggregateEdge(source,
+                    destination,
+                    *edge_additions.E[i].edgeData,
+                    agg_e_for_del,
+                    global_info);
+    }
+#else
+    EdgeData *agg_e_for_del = &emptyEdgeData;
+#endif
     parallel_for (long i = 0; i < edge_deletions.size; i++) {
       uintV source = edge_deletions.E[i].source;
       uintV destination = edge_deletions.E[i].destination;
@@ -383,6 +436,7 @@ class GraphBoltEngineSimple
             edgeFunction(source,
                          destination,
                          *edge_data,
+                         *agg_e_for_del,
                          vertex_values[0][source],
                          contrib_change,
                          global_info_old);
@@ -464,6 +518,19 @@ class GraphBoltEngineSimple
           // check for propagate and retract for the vertices.
           intE outDegree = my_graph.V[u].getOutDegree();
 
+#ifdef EDGEDATA
+          EdgeData tmp;
+          EdgeData *agg_e = &tmp;
+          granular_for(i, 0, outDegree, (outDegree > 1024), {
+            uintV v = my_graph.V[u].getOutNeighbor(i);
+            EdgeData *edge_data = my_graph.V[u].getOutEdgeData(i);
+
+            AggregateEdge(u, v, *edge_data, agg_e, global_info);
+          });
+#else
+          EdgeData *agg_e = &emptyEdgeData;
+#endif
+
           granular_for(i, 0, outDegree, (outDegree > 1024), {
             uintV v = my_graph.V[u].getOutNeighbor(i);
             bool ret = false;
@@ -480,6 +547,7 @@ class GraphBoltEngineSimple
             ret = edgeFunction(u,
                                v,
                                *edge_data,
+                               *agg_e,
                                vertex_values[iter - 1][u],
                                contrib_change,
                                global_info);
@@ -580,6 +648,24 @@ class GraphBoltEngineSimple
 
       // ========== EDGE COMPUTATION - DIRECT CHANGES - for next iter ==========
       bool has_direct_changes = false;
+
+#ifdef EDGEDATA
+      EdgeData tmp_add;
+      EdgeData *agg_e_for_add = &tmp_add;
+
+      parallel_for (long i = 0; i < edge_additions.size; i++) {
+        uintV source = edge_additions.E[i].source;
+        uintV destination = edge_additions.E[i].destination;
+
+        AggregateEdge(source,
+                      destination,
+                      *edge_additions.E[i].edgeData,
+                      agg_e_for_add,
+                      global_info);
+      }
+#else
+      EdgeData *agg_e_for_add = &emptyEdgeData;
+#endif
       parallel_for (long i = 0; i < edge_additions.size; i++) {
         uintV source = edge_additions.E[i].source;
         uintV destination = edge_additions.E[i].destination;
@@ -606,9 +692,10 @@ class GraphBoltEngineSimple
 #else
           EdgeData *edge_data = &emptyEdgeData;
 #endif
-          bool ret = edgeFunction(source, destination, *edge_data,
-                                  vertex_values[0][source], contrib_change,
-                                  global_info);
+          bool ret =
+              edgeFunction(source, destination, *edge_data, *agg_e_for_add,
+                           vertex_values[0][source], contrib_change,
+                           global_info);
 
           if (ret) {
             if (use_lock) {
@@ -627,7 +714,23 @@ class GraphBoltEngineSimple
           }
         }
       }
+#ifdef EDGEDATA
+      EdgeData tmp_del;
+      EdgeData *agg_e_for_del = &tmp_del;
 
+      parallel_for (long i = 0; i < edge_additions.size; i++) {
+        uintV source = edge_additions.E[i].source;
+        uintV destination = edge_additions.E[i].destination;
+
+        AggregateEdge(source,
+                      destination,
+                      *edge_additions.E[i].edgeData,
+                      agg_e_for_del,
+                      global_info);
+      }
+#else
+      EdgeData *agg_e_for_del = &emptyEdgeData;
+#endif
       parallel_for (long i = 0; i < edge_deletions.size; i++) {
         uintV source = edge_deletions.E[i].source;
         uintV destination = edge_deletions.E[i].destination;
@@ -654,9 +757,10 @@ class GraphBoltEngineSimple
 #else
           EdgeData *edge_data = &emptyEdgeData;
 #endif
-          bool ret = edgeFunction(source, destination, *edge_data,
-                                  vertex_values[0][source], contrib_change,
-                                  global_info);
+          bool ret =
+              edgeFunction(source, destination, *edge_data, *agg_e_for_del,
+                           vertex_values[0][source], contrib_change,
+                           global_info);
 
           if (ret) {
             if (use_lock) {

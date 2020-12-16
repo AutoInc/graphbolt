@@ -251,6 +251,7 @@ template<class AggregationValueType, class VertexValueType, class EdgeDataType,
     class GlobalInfoType>
 inline bool edgeFunction(const uintV &u, const uintV &v,
                          const EdgeDataType &edge_weight,
+                         const EdgeDataType &agg_e,
                          const VertexValueType &u_value,
                          AggregationValueType &u_change_in_contribution,
                          GlobalInfoType &global_info) {
