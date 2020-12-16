@@ -296,6 +296,8 @@ public:
   // For adaptive switching
   AdaptiveExecutor adaptive_executor;
   bool ae_enabled;
+  double initial_checking_time = 0;
+  double inc_checking_time = 0;
 
   // ======================================================================
   // CONSTRUCTOR / INIT
@@ -565,7 +567,7 @@ public:
     }
     int iters = traditionalIncrementalComputation(1);
 
-    cout << "Initial graph processing : " << full_timer.stop() << "\n";
+    cout << "Initial graph processing : " << full_timer.stop() - initial_checking_time << "\n";
     cout << "Number of iterations : " << iters << "\n";
     printOutput();
     // testPrint();

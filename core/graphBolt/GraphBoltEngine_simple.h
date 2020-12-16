@@ -225,13 +225,18 @@ class GraphBoltEngineSimple
           break;
         }
 
-        if (isTerminated<VertexValueType,
-                         GlobalInfoType>(vertex_values[iter - 1],
-                                         vertex_values[iter],
-                                         global_info)) {
+        timer timer;
+        timer.start();
+        auto stopped = isTerminated<VertexValueType,
+                                    GlobalInfoType>(vertex_values[iter - 1],
+                                                    vertex_values[iter],
+                                                    global_info);
+        this->initial_checking_time += timer.stop();
+        if (stopped) {
           break;
         }
 
+        this->initial_checking_time += timer.stop();
       }
     }
     if (ae_enabled) {
@@ -679,11 +684,14 @@ class GraphBoltEngineSimple
       iteration_time += iteration_timer.next();
 
       // Convergence check
-
-      if (isTerminated<VertexValueType,
-                       GlobalInfoType>(vertex_values[iter - 1],
-                                       vertex_values[iter],
-                                       global_info)) {
+      timer timer;
+      timer.start();
+      auto stopped = isTerminated<VertexValueType,
+                                  GlobalInfoType>(vertex_values[iter - 1],
+                                                  vertex_values[iter],
+                                                  global_info);
+      this->inc_checking_time += timer.stop();
+      if (stopped) {
         break;
       }
 
@@ -709,7 +717,8 @@ class GraphBoltEngineSimple
       iteration_time = iteration_timer.next();
     }
 
-    cout << "Finished batch : " << full_timer.stop() << "\n";
+    cout << "Finished batch : " << full_timer.stop() - this->inc_checking_time
+         << "\n";
     cout << "Number of iterations : " << converged_iteration << "\n";
     // testPrint();
     printOutput();
