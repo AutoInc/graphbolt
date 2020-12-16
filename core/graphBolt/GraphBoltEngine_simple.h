@@ -235,8 +235,6 @@ class GraphBoltEngineSimple
         if (stopped) {
           break;
         }
-
-        this->initial_checking_time += timer.stop();
       }
     }
     if (ae_enabled) {
