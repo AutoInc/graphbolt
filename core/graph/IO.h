@@ -485,24 +485,4 @@ graph<vertex> readGraph(char *iFile, bool symmetric, bool isSimple,
   return readGraphFromFile<vertex>(iFile, symmetric, isSimple, debugFlag);
 }
 
-template<class T>
-std::shared_ptr<std::unordered_map<uintV, T>> readAnswer(const char *path) {
-  std::ifstream infile(path);
-  std::string line;
-  auto ans = std::make_shared<std::unordered_map<uintV, T>>();
-
-  auto &set = *ans;
-  while (std::getline(infile, line)) {
-    std::istringstream iss(line);
-    uintV v;
-    T val;
-
-    if (!(iss >> v >> val)) {
-      std::cerr << "Failed to parse answer: " << line << std::endl;
-      exit(1);
-    }
-    set[v] = val;
-  }
-  return ans;
-}
 #endif
