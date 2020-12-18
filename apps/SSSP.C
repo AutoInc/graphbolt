@@ -30,7 +30,7 @@
 #include "../core/main.h"
 #include <math.h>
 
-#define MAX_DISTANCE 65535
+#define MAX_DISTANCE 4294967295
 
 // ======================================================================
 // SSSPINFO
