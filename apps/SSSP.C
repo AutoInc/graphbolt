@@ -30,7 +30,7 @@
 #include "../core/main.h"
 #include <math.h>
 
-#define MAX_DISTANCE 4294967295
+#define MAX_DISTANCE 65535
 
 // ======================================================================
 // SSSPINFO
@@ -47,8 +47,8 @@ public:
 
 #ifdef EDGEDATA
 #else
-  uint32_t getWeight(uintV u, uintV v) {
-    return (uint32_t)((u + v) % weight_cap + 1);
+  uint16_t getWeight(uintV u, uintV v) {
+    return (uint16_t)((u + v) % weight_cap + 1);
   }
 #endif
 
@@ -137,7 +137,7 @@ template <class vertex> void compute(graph<vertex> &G, commandLine config) {
   SsspInfo global_info(source_vertex, weight_cap);
 
   cout << "Initializing engine ....\n";
-  KickStarterEngine<vertex, uint32_t, SsspInfo> engine(G, global_info, config);
+  KickStarterEngine<vertex, uint16_t, SsspInfo> engine(G, global_info, config);
   engine.init();
   cout << "Finished initializing engine\n";
   engine.run();
