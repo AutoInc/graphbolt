@@ -73,16 +73,13 @@ inline bool
 edgeFunction(const uintV &u, const uintV &v, const EdgeDataType &edge_weight,
              const VertexValueType &u_value, VertexValueType &v_value,
              GlobalInfoType &global_info) {
-  cout << u << ":" << u_value << "->" << v << ":" << v_value << endl;
   if (u_value == MAX_DISTANCE) {
     return false;
   } else {
     VertexValueType old_v = v_value;
 #ifdef EDGEDATA
-    // v_value = min(u_value, v_value);
     v_value = u_value;
 #else
-    // v_value = min(u_value, v_value);
     v_value = u_value;
 #endif
     return true;
