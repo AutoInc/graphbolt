@@ -26,7 +26,7 @@ GRAPHBOLT=../core/graphBolt/AdaptiveExecutor.h ../core/graphBolt/GraphBoltEngine
 OTHERS=../core/main.h
 
 # ALL=PageRank LabelPropagation CF SSSP BFS PHP
-ALL=PageRank SSSP PHP
+ALL=PageRank SSSP PHP CC
 
 # make
 
