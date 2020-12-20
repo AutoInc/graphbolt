@@ -107,7 +107,7 @@ public:
   template <class T> struct DependencyData {
     uintV parent;
     T value;
-    uint32_t level;
+    uint16_t level;
     DependencyData() : level(MAX_LEVEL), value(), parent(MAX_PARENT) {}
 
     DependencyData(uint32_t _level, T _value, uint32_t _parent)
