@@ -19,12 +19,6 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifdef EDGEDATA
-// NOTE: The edge data type header file should then be included as the first header
-// file at the top of the user program.
-// #include "WCC_edgeData.h"
-#endif
-
 #include "../core/common/utils.h"
 #include "../core/graphBolt/KickStarterEngine.h"
 #include "../core/main.h"
@@ -35,12 +29,12 @@
 // ======================================================================
 // SSSPINFO
 // ======================================================================
-class WccInfo {
+class CCInfo {
 public:
 
-  WccInfo(){}
+  CCInfo(){}
 
-  void copy(const WccInfo &object) {}
+  void copy(const CCInfo &object) {}
 
   void processUpdates(edgeArray &edge_additions, edgeArray &edge_deletions) {}
 
@@ -109,10 +103,10 @@ void printAdditionalData(ofstream &output_file, const uintV &v,
 // COMPUTE FUNCTION
 // ======================================================================
 template <class vertex> void compute(graph<vertex> &G, commandLine config) {
-  WccInfo global_info;
+  CCInfo global_info;
 
   cout << "Initializing engine ....\n";
-  KickStarterEngine<vertex, uint16_t, WccInfo> engine(G, global_info, config);
+  KickStarterEngine<vertex, uint16_t, CCInfo> engine(G, global_info, config);
   engine.init();
   cout << "Finished initializing engine\n";
   engine.run();
