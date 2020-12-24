@@ -23,6 +23,7 @@
 #define GRAPHBOLT_ENGINE_H
 
 #include "../common/utils.h"
+#include "../common/metrics.h"
 #include "AdaptiveExecutor.h"
 #include "ingestor.h"
 #include <vector>
@@ -307,6 +308,8 @@ class GraphBoltEngine {
   AdaptiveExecutor adaptive_executor;
   bool ae_enabled;
   double initial_checking_time = 0;
+  double begin_mem;
+
 
   // ======================================================================
   // CONSTRUCTOR / INIT
@@ -330,6 +333,7 @@ class GraphBoltEngine {
   }
 
   void init() {
+    begin_mem = pbbs::RSSInMB();
     cout << "Creating dependency structure ....\n";
     createDependencyData();
     createTemporaryStructures();
@@ -570,6 +574,9 @@ class GraphBoltEngine {
       // ingestor.edge_additions and ingestor.edge_deletions have been added
       // to the graph datastructure. Now, refine using it.
       deltaCompute(edge_additions, edge_deletions);
+    }
+    if (begin_mem > 0) {
+      std::cout << "Mem: " << pbbs::RSSInMB() - begin_mem << " MB";
     }
     freeTemporaryStructures();
   }

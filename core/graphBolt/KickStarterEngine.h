@@ -24,6 +24,7 @@
 
 #include "../common/bitsetscheduler.h"
 #include "../common/utils.h"
+#include "../common/metrics.h"
 #include "ingestor.h"
 #include <vector>
 
@@ -160,6 +161,7 @@ public:
   // Stream Ingestor
   Ingestor<vertex> ingestor;
   int current_batch;
+  double begin_mem;
 
   KickStarterEngine(graph<vertex> &_my_graph, GlobalInfoType &_global_info,
                     commandLine _config)
@@ -171,6 +173,7 @@ public:
   }
 
   void init() {
+    begin_mem = pbbs::RSSInMB();
     createDependencyData();
     createTemporaryStructures();
     createVertexSubsets();
@@ -302,6 +305,9 @@ public:
       edgeArray &edge_additions = ingestor.getEdgeAdditions();
       edgeArray &edge_deletions = ingestor.getEdgeDeletions();
       deltaCompute(edge_additions, edge_deletions);
+    }
+    if (begin_mem > 0) {
+      std::cout << "Mem: " << pbbs::RSSInMB() - begin_mem << " MB";
     }
   }
 
