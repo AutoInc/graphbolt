@@ -310,7 +310,6 @@ class GraphBoltEngine {
   double initial_checking_time = 0;
   double begin_mem;
 
-
   // ======================================================================
   // CONSTRUCTOR / INIT
   // ======================================================================
@@ -576,7 +575,7 @@ class GraphBoltEngine {
       deltaCompute(edge_additions, edge_deletions);
     }
     if (begin_mem > 0) {
-      std::cout << "Mem: " << pbbs::RSSInMB() - begin_mem << " MB";
+      std::cout << "Mem: " << pbbs::RSSInMB() - begin_mem << " MB" << std::endl;
     }
     freeTemporaryStructures();
   }
