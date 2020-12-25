@@ -13,7 +13,7 @@ INTE = -DEDGELONG
 #compilers
 $(info ************  Using CILK ************)
 PCC = g++
-PCFLAGS = -std=c++14 -fcilkplus -lcilkrts -g -O3 -DCILK $(INTV) $(INTE) $(EDGEDATA)
+PCFLAGS = -std=c++14 -mcx16 -march=native -fcilkplus -lcilkrts -g -O3 -DCILK $(INTV) $(INTE) $(EDGEDATA)
 LDFLAGS = -L../lib/mimalloc/out/release -lmimalloc 
 
 # dependencies
