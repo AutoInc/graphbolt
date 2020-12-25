@@ -30,7 +30,7 @@
 #include "../core/main.h"
 #include <math.h>
 
-#define MAX_DISTANCE 65535
+#define MAX_DISTANCE 4294967295
 
 // ======================================================================
 // SSSPINFO
@@ -137,7 +137,7 @@ template <class vertex> void compute(graph<vertex> &G, commandLine config) {
   SsspInfo global_info(source_vertex, weight_cap);
 
   cout << "Initializing engine ....\n";
-  KickStarterEngine<vertex, uint16_t, SsspInfo> engine(G, global_info, config);
+  KickStarterEngine<vertex, uint32_t, SsspInfo> engine(G, global_info, config);
   engine.init();
   cout << "Finished initializing engine\n";
   engine.run();

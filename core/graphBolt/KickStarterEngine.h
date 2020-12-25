@@ -109,7 +109,7 @@ class KickStarterEngine {
   struct DependencyData {
     uintV parent;
     T value;
-    uint16_t level;
+    uint32_t level;
     DependencyData() : level(MAX_LEVEL), value(), parent(MAX_PARENT) {
     }
 

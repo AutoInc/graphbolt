@@ -422,6 +422,7 @@ intT filter(ET *In, ET *Out, intT n, PRED p) {
 
 } // namespace sequence
 
+
 template <class ET> inline bool CAS(ET *ptr, ET oldv, ET newv) {
   if (sizeof(ET) == 1) {
     return __sync_bool_compare_and_swap((bool *)ptr, *((bool *)&oldv),
@@ -432,6 +433,14 @@ template <class ET> inline bool CAS(ET *ptr, ET oldv, ET newv) {
   } else if (sizeof(ET) == 8) {
     return __sync_bool_compare_and_swap((long *)ptr, *((long *)&oldv),
                                         *((long *)&newv));
+  } else if(sizeof(ET) == 16) {
+    assert(sizeof(long double) == 16);
+    return __atomic_compare_exchange((long double *) ptr,
+                                     (long double *) &oldv,
+                                     (long double *) &newv,
+                                     true,
+                                     __ATOMIC_RELEASE,
+                                     __ATOMIC_ACQUIRE);
   } else {
     std::cout << "CAS bad length : " << sizeof(ET) << std::endl;
     abort();

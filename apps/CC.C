@@ -24,27 +24,31 @@
 #include "../core/main.h"
 #include <math.h>
 
-#define MAX_DISTANCE 65535
+#define MAX_ID 4294967295
 
 // ======================================================================
 // SSSPINFO
 // ======================================================================
 class CCInfo {
-public:
+ public:
 
-  CCInfo(){}
+  CCInfo() {
+  }
 
-  void copy(const CCInfo &object) {}
+  void copy(const CCInfo &object) {
+  }
 
-  void processUpdates(edgeArray &edge_additions, edgeArray &edge_deletions) {}
+  void processUpdates(edgeArray &edge_additions, edgeArray &edge_deletions) {
+  }
 
-  void cleanup() {}
+  void cleanup() {
+  }
 };
 
 // ======================================================================
 // VERTEXVALUE INITIALIZATION
 // ======================================================================
-template <class VertexValueType, class GlobalInfoType>
+template<class VertexValueType, class GlobalInfoType>
 inline void initializeVertexValue(const uintV &v,
                                   VertexValueType &v_vertex_value,
                                   const GlobalInfoType &global_info) {
@@ -54,20 +58,20 @@ inline void initializeVertexValue(const uintV &v,
 // ======================================================================
 // ACTIVATE VERTEX/COMPUTE VERTEX FOR FIRST ITERATION
 // ======================================================================
-template <class GlobalInfoType>
+template<class GlobalInfoType>
 inline bool frontierVertex(const uintV &v, const GlobalInfoType &global_info) {
-    return true;
+  return true;
 }
 
 // ======================================================================
 // EDGE FUNCTION
 // ======================================================================
-template <class VertexValueType, class EdgeDataType, class GlobalInfoType>
+template<class VertexValueType, class EdgeDataType, class GlobalInfoType>
 inline bool
 edgeFunction(const uintV &u, const uintV &v, const EdgeDataType &edge_weight,
              const VertexValueType &u_value, VertexValueType &v_value,
              GlobalInfoType &global_info) {
-  if (u_value == MAX_DISTANCE) {
+  if (u_value == MAX_ID) {
     return false;
   } else {
     VertexValueType old_v = v_value;
@@ -85,7 +89,7 @@ edgeFunction(const uintV &u, const uintV &v, const EdgeDataType &edge_weight,
 // ======================================================================
 // shouldPropagate condition for deciding if the value change in
 // updated graph violates monotonicity
-template <class VertexValueType, class GlobalInfoType>
+template<class VertexValueType, class GlobalInfoType>
 inline bool shouldPropagate(const VertexValueType &old_value,
                             const VertexValueType &new_value,
                             GlobalInfoType &global_info) {
@@ -95,18 +99,20 @@ inline bool shouldPropagate(const VertexValueType &old_value,
 // ======================================================================
 // HELPER FUNCTIONS
 // ======================================================================
-template <class GlobalInfoType>
+template<class GlobalInfoType>
 void printAdditionalData(ofstream &output_file, const uintV &v,
-                         GlobalInfoType &info) {}
+                         GlobalInfoType &info) {
+}
 
 // ======================================================================
 // COMPUTE FUNCTION
 // ======================================================================
-template <class vertex> void compute(graph<vertex> &G, commandLine config) {
+template<class vertex>
+void compute(graph<vertex> &G, commandLine config) {
   CCInfo global_info;
 
   cout << "Initializing engine ....\n";
-  KickStarterEngine<vertex, uint16_t, CCInfo> engine(G, global_info, config);
+  KickStarterEngine<vertex, uint32_t, CCInfo> engine(G, global_info, config);
   engine.init();
   cout << "Finished initializing engine\n";
   engine.run();
