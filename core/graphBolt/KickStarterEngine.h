@@ -24,7 +24,6 @@
 
 #include "../common/bitsetscheduler.h"
 #include "../common/utils.h"
-#include "../common/metrics.h"
 #include "ingestor.h"
 #include <vector>
 
@@ -43,7 +42,7 @@ EdgeData emptyEdgeData;
 // VertexValue INITIALIZATION
 // ======================================================================
 // Set the initial value of the vertex
-template<class VertexValueType, class GlobalInfoType>
+template <class VertexValueType, class GlobalInfoType>
 inline void initializeVertexValue(const uintV &v,
                                   VertexValueType &v_vertex_value,
                                   const GlobalInfoType &global_info);
@@ -53,7 +52,7 @@ inline void initializeVertexValue(const uintV &v,
 // ======================================================================
 // Return whether a vertex should be active when the processing starts. For
 // BFS/SSSP, only source vertex returns true. For CC, all vertices return true.
-template<class GlobalInfoType>
+template <class GlobalInfoType>
 inline bool frontierVertex(const uintV &v, const GlobalInfoType &global_info);
 
 // ======================================================================
@@ -62,7 +61,7 @@ inline bool frontierVertex(const uintV &v, const GlobalInfoType &global_info);
 // For an edge (u, v), compute v's value based on u's value.
 // Return false if the value from u should not be use to update the value of v.
 // Return true otherwise.
-template<class VertexValueType, class EdgeDataType, class GlobalInfoType>
+template <class VertexValueType, class EdgeDataType, class GlobalInfoType>
 inline bool edgeFunction(const uintV &u, const uintV &v,
                          const EdgeDataType &edge_data,
                          const VertexValueType &u_value,
@@ -73,7 +72,7 @@ inline bool edgeFunction(const uintV &u, const uintV &v,
 // ======================================================================
 // shouldPropagate condition for deciding if the value change in
 // updated graph violates monotonicity
-template<class VertexValueType, class GlobalInfoType>
+template <class VertexValueType, class GlobalInfoType>
 inline bool shouldPropagate(const VertexValueType &old_value,
                             const VertexValueType &new_value,
                             GlobalInfoType &global_info);
@@ -81,17 +80,17 @@ inline bool shouldPropagate(const VertexValueType &old_value,
 // ======================================================================
 // HELPER FUNCTIONS
 // ======================================================================
-template<class GlobalInfoType>
+template <class GlobalInfoType>
 void printAdditionalData(ofstream &output_file, const uintV &v,
                          GlobalInfoType &info);
 
 // ======================================================================
 // KICKSTARTER ENGINE
 // ======================================================================
-template<class vertex, class VertexValueType, class GlobalInfoType>
+template <class vertex, class VertexValueType, class GlobalInfoType>
 class KickStarterEngine {
 
- public:
+public:
   graph<vertex> &my_graph;
   commandLine config;
 
@@ -105,21 +104,17 @@ class KickStarterEngine {
   long n_old;
   GlobalInfoType global_info_old;
 
-  template<class T>
-  struct DependencyData {
+  template <class T> struct DependencyData {
     uintV parent;
     T value;
-    uint32_t level;
-    DependencyData() : level(MAX_LEVEL), value(), parent(MAX_PARENT) {
-    }
+    uint16_t level;
+    DependencyData() : level(MAX_LEVEL), value(), parent(MAX_PARENT) {}
 
-    DependencyData(uint32_t _level, T _value, uint32_t _parent)
-        : level(_level), value(_value), parent(_parent) {
-    }
+    DependencyData(uint16_t _level, T _value, uint32_t _parent)
+        : level(_level), value(_value), parent(_parent) {}
 
     DependencyData(const DependencyData &object)
-        : level(object.level), value(object.value), parent(object.parent) {
-    }
+        : level(object.level), value(object.value), parent(object.parent) {}
 
     void reset() {
       parent = MAX_PARENT;
@@ -142,11 +137,11 @@ class KickStarterEngine {
         return false;
     }
 
-    template<class P>
+    template <class P>
     friend ostream &operator<<(ostream &os, const DependencyData<P> &dt);
   };
 
-  template<class P>
+  template <class P>
   friend ostream &operator<<(ostream &os, const DependencyData<P> &dt) {
     os << dt.value << " " << dt.level;
     return os;
@@ -165,19 +160,17 @@ class KickStarterEngine {
   // Stream Ingestor
   Ingestor<vertex> ingestor;
   int current_batch;
-  double begin_mem;
 
   KickStarterEngine(graph<vertex> &_my_graph, GlobalInfoType &_global_info,
                     commandLine _config)
       : my_graph(_my_graph), global_info(_global_info), global_info_old(),
-      config(_config), ingestor(_my_graph, _config), current_batch(0),
-      active_vertices_bitset(my_graph.n) {
+        config(_config), ingestor(_my_graph, _config), current_batch(0),
+        active_vertices_bitset(my_graph.n) {
     n = my_graph.n;
     n_old = 0;
   }
 
   void init() {
-    begin_mem = pbbs::RSSInMB();
     createDependencyData();
     createTemporaryStructures();
     createVertexSubsets();
@@ -204,14 +197,10 @@ class KickStarterEngine {
         renewA(DependencyData<VertexValueType>, dependency_data, n);
     initDependencyData(n_old, n);
   }
-  void freeDependencyData() {
-    deleteA(dependency_data);
-  }
-  void initDependencyData() {
-    initDependencyData(0, n);
-  }
+  void freeDependencyData() { deleteA(dependency_data); }
+  void initDependencyData() { initDependencyData(0, n); }
   void initDependencyData(long start_index, long end_index) {
-    parallel_for (long v = start_index; v < end_index; v++) {
+    parallel_for(long v = start_index; v < end_index; v++) {
       dependency_data[v].reset();
       initializeVertexValue<VertexValueType, GlobalInfoType>(
           v, dependency_data[v].value, global_info);
@@ -229,14 +218,9 @@ class KickStarterEngine {
         renewA(DependencyData<VertexValueType>, dependency_data_old, n);
     initDependencyData(n_old, n);
   }
-  virtual void freeTemporaryStructures() {
-    deleteA(dependency_data_old);
-  }
-  virtual void initTemporaryStructures() {
-    initTemporaryStructures(0, n);
-  }
-  virtual void initTemporaryStructures(long start_index, long end_index) {
-  }
+  virtual void freeTemporaryStructures() { deleteA(dependency_data_old); }
+  virtual void initTemporaryStructures() { initTemporaryStructures(0, n); }
+  virtual void initTemporaryStructures(long start_index, long end_index) {}
 
   // ======================================================================
   // VERTEX SUBSETS USED BY THE ENGINE
@@ -257,11 +241,9 @@ class KickStarterEngine {
     deleteA(all_affected_vertices);
     deleteA(changed);
   }
-  void initVertexSubsets() {
-    initVertexSubsets(0, n);
-  }
+  void initVertexSubsets() { initVertexSubsets(0, n); }
   void initVertexSubsets(long start_index, long end_index) {
-    parallel_for (long j = start_index; j < end_index; j++) {
+    parallel_for(long j = start_index; j < end_index; j++) {
       frontier[j] = 0;
       all_affected_vertices[j] = 0;
       changed[j] = 0;
@@ -321,9 +303,6 @@ class KickStarterEngine {
       edgeArray &edge_deletions = ingestor.getEdgeDeletions();
       deltaCompute(edge_additions, edge_deletions);
     }
-    if (begin_mem > 0) {
-      std::cout << "Mem: " << pbbs::RSSInMB() - begin_mem << " MB" << std::endl;
-    }
   }
 
   void initialCompute() {
@@ -331,7 +310,7 @@ class KickStarterEngine {
     full_timer.start();
     active_vertices_bitset.reset();
 
-    parallel_for (uintV v = 0; v < n; v++) {
+    parallel_for(uintV v = 0; v < n; v++) {
       if (frontierVertex(v, global_info)) {
         active_vertices_bitset.schedule(v);
         dependency_data[v].level = 0;
@@ -345,19 +324,14 @@ class KickStarterEngine {
   }
 
   // TODO : Write a lock based reduce function. Add functionality to use the
-  // lock based reduce function depending on the size of DependendencyData              
+  // lock based reduce function depending on the size of DependendencyData
   bool reduce(const uintV &u, const uintV &v, const EdgeData &edge_data,
               const DependencyData<VertexValueType> &u_data,
               DependencyData<VertexValueType> &v_data, GlobalInfoType &info) {
     DependencyData<VertexValueType> newV, oldV;
     DependencyData<VertexValueType> incoming_value_curr = u_data;
 
-    bool ret = edgeFunction(u,
-                            v,
-                            edge_data,
-                            incoming_value_curr.value,
-                            newV.value,
-                            info);
+    bool ret = edgeFunction(u, v, edge_data, incoming_value_curr.value, newV.value, info);
     if (!ret) {
       return false;
     }
@@ -381,7 +355,7 @@ class KickStarterEngine {
   int traditionalIncrementalComputation() {
     while (active_vertices_bitset.anyScheduledTasks()) {
       active_vertices_bitset.newIteration();
-      parallel_for (uintV u = 0; u < n; u++) {
+      parallel_for(uintV u = 0; u < n; u++) {
         if (active_vertices_bitset.isScheduled(u)) {
           // process all its outNghs
           intE outDegree = my_graph.V[u].getOutDegree();
@@ -392,9 +366,8 @@ class KickStarterEngine {
 #else
             EdgeData *edge_data = &emptyEdgeData;
 #endif
-            bool ret =
-                reduce(u, v, *edge_data, dependency_data[u], dependency_data[v],
-                       global_info);
+            bool ret = reduce(u, v, *edge_data, dependency_data[u], dependency_data[v],
+                              global_info);
             if (ret) {
               active_vertices_bitset.schedule(v);
             }
@@ -417,7 +390,7 @@ class KickStarterEngine {
 
     // Reset values before incremental computation
     active_vertices_bitset.reset();
-    parallel_for (uintV v = 0; v < n; v++) {
+    parallel_for(uintV v = 0; v < n; v++) {
       frontier[v] = 0;
       // all_affected_vertices is used only for switching purposes
       all_affected_vertices[v] = 0;
@@ -437,7 +410,7 @@ class KickStarterEngine {
     // PHASE 2 = Identify vertex values affected by edge deletions
     // ======================================================================
     bool frontier_not_empty = false;
-    parallel_for (long i = 0; i < edge_deletions.size; i++) {
+    parallel_for(long i = 0; i < edge_deletions.size; i++) {
       uintV source = edge_deletions.E[i].source;
       uintV destination = edge_deletions.E[i].destination;
       if (dependency_data[destination].parent == source) {
@@ -459,11 +432,11 @@ class KickStarterEngine {
       // For all the vertices 'v' affected, update value of 'v' from its
       // inNghs, such that level(v) > level(inNgh) in the old dependency tree
       active_vertices_bitset.newIteration();
-      parallel_for (uintV v = 0; v < n; v++) {
+      parallel_for(uintV v = 0; v < n; v++) {
         if (active_vertices_bitset.isScheduled(v)) {
           intE inDegree = my_graph.V[v].getInDegree();
           DependencyData<VertexValueType> v_value_old = dependency_data[v];
-          parallel_for (intE i = 0; i < inDegree; i++) {
+          parallel_for(intE i = 0; i < inDegree; i++) {
             uintV u = my_graph.V[v].getInNeighbor(i);
             // Process inEdges with smallerLevel than currentVertex.
             if (dependency_data_old[v].level > dependency_data_old[u].level) {
@@ -473,12 +446,7 @@ class KickStarterEngine {
               EdgeData *edge_data = &emptyEdgeData;
 #endif
               bool ret =
-                  reduce(u,
-                         v,
-                         *edge_data,
-                         dependency_data[u],
-                         v_value_old,
-                         global_info);
+                  reduce(u, v, *edge_data, dependency_data[u], v_value_old, global_info);
             }
           }
           // Evaluate the shouldReduce condition.. See if the new value is
@@ -492,13 +460,13 @@ class KickStarterEngine {
         }
       }
 
-      parallel_for (uintV v = 0; v < n; v++) {
+      parallel_for(uintV v = 0; v < n; v++) {
         if (changed[v]) {
           changed[v] = 0;
           // Push down in dependency tree
           intE outDegree = my_graph.V[v].getOutDegree();
           DependencyData<VertexValueType> v_value = dependency_data[v];
-          parallel_for (intE i = 0; i < outDegree; i++) {
+          parallel_for(intE i = 0; i < outDegree; i++) {
             uintV w = my_graph.V[v].getOutNeighbor(i);
             // Push the changes down only to its outNghs in the dependency
             // tree
@@ -543,10 +511,10 @@ class KickStarterEngine {
     }
 
     // Pull once for all the affected vertices
-    parallel_for (uintV v = 0; v < n; v++) {
+    parallel_for(uintV v = 0; v < n; v++) {
       if (all_affected_vertices[v] == 1) {
         intE inDegree = my_graph.V[v].getInDegree();
-        parallel_for (intE i = 0; i < inDegree; i++) {
+        parallel_for(intE i = 0; i < inDegree; i++) {
           uintV u = my_graph.V[v].getInNeighbor(i);
 #ifdef EDGEDATA
           EdgeData *edge_data = my_graph.V[v].getInEdgeData(i);
@@ -554,12 +522,7 @@ class KickStarterEngine {
           EdgeData *edge_data = &emptyEdgeData;
 #endif
           bool ret =
-              reduce(u,
-                     v,
-                     *edge_data,
-                     dependency_data[u],
-                     dependency_data[v],
-                     global_info);
+              reduce(u, v, *edge_data, dependency_data[u], dependency_data[v], global_info);
         }
       }
     }
@@ -567,7 +530,7 @@ class KickStarterEngine {
     // ======================================================================
     // PHASE 4 - Process additions
     // ======================================================================
-    parallel_for (long i = 0; i < edge_additions.size; i++) {
+    parallel_for(long i = 0; i < edge_additions.size; i++) {
       uintV source = edge_additions.E[i].source;
       uintV destination = edge_additions.E[i].destination;
 #ifdef EDGEDATA
@@ -575,9 +538,8 @@ class KickStarterEngine {
 #else
       EdgeData *edge_data = &emptyEdgeData;
 #endif
-      bool
-          ret = reduce(source, destination, *edge_data, dependency_data[source],
-                       dependency_data[destination], global_info);
+      bool ret = reduce(source, destination, *edge_data, dependency_data[source],
+                        dependency_data[destination], global_info);
       if (ret) {
         all_affected_vertices[destination] = true;
       }
@@ -588,7 +550,7 @@ class KickStarterEngine {
     // ======================================================================
     // For all affected vertices, start traditional processing
     active_vertices_bitset.reset();
-    parallel_for (uintV v = 0; v < n; v++) {
+    parallel_for(uintV v = 0; v < n; v++) {
       if (all_affected_vertices[v] == 1) {
         active_vertices_bitset.schedule(v);
       }
