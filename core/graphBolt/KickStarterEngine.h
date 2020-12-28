@@ -166,7 +166,7 @@ class KickStarterEngine {
   // Stream Ingestor
   Ingestor<vertex> ingestor;
   int current_batch;
-  double begin_mem;
+  uint64_t memory = 0;
 
   KickStarterEngine(graph<vertex> &_my_graph, GlobalInfoType &_global_info,
                     commandLine _config)
@@ -178,7 +178,6 @@ class KickStarterEngine {
   }
 
   void init() {
-    begin_mem = pbbs::RSSInMB();
     createDependencyData();
     createTemporaryStructures();
     createVertexSubsets();
@@ -199,6 +198,7 @@ class KickStarterEngine {
   // ======================================================================
   void createDependencyData() {
     dependency_data = newA(DependencyData<VertexValueType>, n);
+    memory += sizeof(DependencyData<VertexValueType>) * n;
   }
   void resizeDependencyData() {
     dependency_data =
@@ -224,6 +224,7 @@ class KickStarterEngine {
   // ======================================================================
   virtual void createTemporaryStructures() {
     dependency_data_old = newA(DependencyData<VertexValueType>, n);
+    memory += sizeof(DependencyData<VertexValueType>) * n;
   }
   virtual void resizeTemporaryStructures() {
     dependency_data_old =
@@ -246,6 +247,7 @@ class KickStarterEngine {
     frontier = newA(bool, n);
     all_affected_vertices = newA(bool, n);
     changed = newA(bool, n);
+    memory += sizeof(bool) * n * 3;
   }
   void resizeVertexSubsets() {
     frontier = renewA(bool, frontier, n);
@@ -322,9 +324,7 @@ class KickStarterEngine {
       edgeArray &edge_deletions = ingestor.getEdgeDeletions();
       deltaCompute(edge_additions, edge_deletions);
     }
-    if (begin_mem > 0) {
-      std::cout << "Mem: " << pbbs::RSSInMB() - begin_mem << " MB" << std::endl;
-    }
+    std::cout << "Mem: " << memory / 1024 / 1024 << " MB" << std::endl;
   }
 
   void initialCompute() {

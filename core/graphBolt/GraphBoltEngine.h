@@ -308,7 +308,7 @@ class GraphBoltEngine {
   AdaptiveExecutor adaptive_executor;
   bool ae_enabled;
   double initial_checking_time = 0;
-  double begin_mem;
+  uint64_t memory = 0;
 
   // ======================================================================
   // CONSTRUCTOR / INIT
@@ -332,7 +332,6 @@ class GraphBoltEngine {
   }
 
   void init() {
-    begin_mem = pbbs::RSSInMB();
     cout << "Creating dependency structure ....\n";
     createDependencyData();
     createTemporaryStructures();
@@ -358,6 +357,7 @@ class GraphBoltEngine {
   // ======================================================================
   void createLocks() {
     vertex_locks = newA(RWLock, n);
+    memory += sizeof(RWLock) * n;
   }
   void resizeLocks() {
     vertex_locks = renewA(RWLock, vertex_locks, n);
@@ -383,9 +383,13 @@ class GraphBoltEngine {
   void createDependencyData() {
     aggregation_values = newA(AggregationValueType *, history_iterations);
     vertex_values = newA(VertexValueType *, history_iterations);
+    memory += sizeof(AggregationValueType) * history_iterations;
+    memory += sizeof(VertexValueType) * history_iterations;
     for (int i = 0; i < history_iterations; i++) {
       aggregation_values[i] = newA(AggregationValueType, n);
       vertex_values[i] = newA(VertexValueType, n);
+      memory += sizeof(AggregationValueType) * n;
+      memory += sizeof(VertexValueType) * n;
     }
   }
   void resizeDependencyData() {
@@ -426,8 +430,12 @@ class GraphBoltEngine {
     vertex_value_old_curr = newA(VertexValueType, n);
     vertex_value_old_prev = newA(VertexValueType, n);
     delta = newA(AggregationValueType, n);
-    if (use_source_contribution)
+    memory += sizeof(VertexValueType) * n * 3;
+    memory += sizeof(AggregationValueType) * n;
+    if (use_source_contribution) {
       source_change_in_contribution = newA(AggregationValueType, n);
+      memory += sizeof(AggregationValueType) * n;
+    }
   }
   virtual void resizeTemporaryStructures() {
     vertex_value_old_next = renewA(VertexValueType, vertex_value_old_next, n);
@@ -471,6 +479,7 @@ class GraphBoltEngine {
     changed = newA(bool, n);
     retract = newA(bool, n);
     propagate = newA(bool, n);
+    memory += sizeof(bool) * 6;
   }
   void resizeVertexSubsets() {
     all = renewA(bool, all, n);
@@ -574,9 +583,7 @@ class GraphBoltEngine {
       // to the graph datastructure. Now, refine using it.
       deltaCompute(edge_additions, edge_deletions);
     }
-    if (begin_mem > 0) {
-      std::cout << "Mem: " << pbbs::RSSInMB() - begin_mem << " MB" << std::endl;
-    }
+    std::cout << "Mem: " << memory / 1024 / 1024 << " MB" << std::endl;
     freeTemporaryStructures();
   }
 
