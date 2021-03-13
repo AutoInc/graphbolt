@@ -423,27 +423,32 @@ intT filter(ET *In, ET *Out, intT n, PRED p) {
 } // namespace sequence
 
 
-template <class ET> inline bool CAS(ET *ptr, ET oldv, ET newv) {
+template <class ET>
+inline bool CAS(ET* ptr, ET oldv, ET newv) {
   if (sizeof(ET) == 1) {
-    return __sync_bool_compare_and_swap((bool *)ptr, *((bool *)&oldv),
-                                        *((bool *)&newv));
+    return __sync_bool_compare_and_swap(reinterpret_cast<char*>(ptr),
+                                        *(reinterpret_cast<char*>(&oldv)),
+                                        *(reinterpret_cast<char*>(&newv)));
   } else if (sizeof(ET) == 4) {
-    return __sync_bool_compare_and_swap((int *)ptr, *((int *)&oldv),
-                                        *((int *)&newv));
+    return __sync_bool_compare_and_swap(reinterpret_cast<int32_t*>(ptr),
+                                        *(reinterpret_cast<int32_t*>(&oldv)),
+                                        *(reinterpret_cast<int32_t*>(&newv)));
   } else if (sizeof(ET) == 8) {
-    return __sync_bool_compare_and_swap((long *)ptr, *((long *)&oldv),
-                                        *((long *)&newv));
-  } else if(sizeof(ET) == 16) {
-    assert(sizeof(long double) == 16);
-    return __atomic_compare_exchange((long double *) ptr,
-                                     (long double *) &oldv,
-                                     (long double *) &newv,
-                                     true,
-                                     __ATOMIC_RELEASE,
-                                     __ATOMIC_ACQUIRE);
+    return __sync_bool_compare_and_swap(reinterpret_cast<int64_t*>(ptr),
+                                        *(reinterpret_cast<int64_t*>(&oldv)),
+                                        *(reinterpret_cast<int64_t*>(&newv)));
+  } else if (sizeof(ET) == 16) {
+    if (sizeof(long double) != 16) {
+      std::cout << "Unsupported platform" << std::endl;
+      std::abort();
+    }
+    return __atomic_compare_exchange(reinterpret_cast<long double*>(ptr),
+                                     reinterpret_cast<long double*>(&oldv),
+                                     reinterpret_cast<long double*>(&newv),
+                                     true, __ATOMIC_RELEASE, __ATOMIC_ACQUIRE);
   } else {
     std::cout << "CAS bad length : " << sizeof(ET) << std::endl;
-    abort();
+    std::abort();
   }
 }
 
