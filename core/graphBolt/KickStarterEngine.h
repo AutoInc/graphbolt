@@ -408,7 +408,6 @@ class KickStarterEngine {
   void deltaCompute(edgeArray &edge_additions, edgeArray &edge_deletions) {
     timer iteration_timer, phase_timer, full_timer;
     double misc_time, copy_time, phase_time, iteration_time;
-    full_timer.start();
 
     // Handle newly added vertices
     n_old = n;
@@ -594,6 +593,7 @@ class KickStarterEngine {
         active_vertices_bitset.schedule(v);
       }
     }
+    full_timer.start();
     traditionalIncrementalComputation();
 
     cout << "Finished batch : " << full_timer.stop() << "\n";
